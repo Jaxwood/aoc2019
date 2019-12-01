@@ -5,9 +5,24 @@
   [mass]
   (int (- (Math/floor (/ mass 3)) 2)))
 
+(defn calculateAdditionalFuel
+  "Calculate additional fuel required to lanch module"
+  [mass sum]
+  (def fuel (calculateFuel mass))
+  (if (<= fuel 0)
+    sum
+    (calculateAdditionalFuel fuel (+ sum fuel))))
+
 (defn day01a
   "Day01a"
   [filename]
   (def raw (slurp filename))
   (def masses (map #(Integer/parseInt %1) (clojure.string/split raw #"\r\n")))
   (reduce + 0 (map calculateFuel masses)))
+
+(defn day01b
+  "Day01b"
+  [filename]
+  (def raw (slurp filename))
+  (def masses (map #(Integer/parseInt %1) (clojure.string/split raw #"\r\n")))
+  (reduce + 0 (map #(calculateAdditionalFuel %1 0) masses)))
