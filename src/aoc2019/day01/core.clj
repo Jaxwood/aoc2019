@@ -1,12 +1,12 @@
 (ns aoc2019.day01.core)
 
 (defn calculateFuel
-  "Calculate fuel required to lanch module"
+  "Calculate fuel required to launch module"
   [mass]
   (int (- (Math/floor (/ mass 3)) 2)))
 
 (defn calculateAdditionalFuel
-  "Calculate additional fuel required to lanch module"
+  "Calculate additional fuel required to launch module"
   [mass sum]
   (def fuel (calculateFuel mass))
   (if (<= fuel 0)
