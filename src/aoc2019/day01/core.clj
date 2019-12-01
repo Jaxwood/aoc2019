@@ -1,6 +1,6 @@
 (ns aoc2019.day01.core)
 
-(defn foo
-  "I don't do a whole lot."
+(defn day01a
+  "Calculate fuel required to lanch module"
   [x]
-  (println x "Hello, World!"))
+  (int (- (Math/floor (/ x 3)) 2)))
