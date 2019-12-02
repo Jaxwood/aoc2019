@@ -54,8 +54,7 @@
 (defn day02b
   "Calculate int codes for puzzle input"
   [sequences noun verb target]
-  (loop [noun noun verb verb]
-    (let [result (day02a sequences noun verb)]
-      (if (= result target)
-        (+ (* 100 noun) verb)
-        (recur (incNoun noun verb) (incVerb verb))))))
+  (let [result (day02a sequences noun verb)]
+    (if (= result target)
+      (+ (* 100 noun) verb)
+      (recur sequences (incNoun noun verb) (incVerb verb) target))))
