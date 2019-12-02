@@ -24,10 +24,43 @@
   (def updatedSeq (update (update seq 1 (constantly noun)) 2 (constantly verb)))
   updatedSeq)
 
-(defn day02a
-  "Calcaulate int codes for puzzle input"
+(defn incVerb
+  "Increment verb"
+  [verb]
+  (if (= verb 99)
+    0
+    (inc verb)
+  ))
+
+(defn incNoun
+  "Increment noun"
+  [noun verb]
+  (if (= verb 99)
+    (inc noun)
+    noun
+  ))
+
+(defn parse
+  "read from input file"
   [filename]
   (def raw (slurp filename))
   (def firstLine (first (clojure.string/split raw #"\r\n")))
   (def sequences (map #(Integer/parseInt %1) (clojure.string/split firstLine #",")))
-  (first (intCode (modifyParameters (into [] sequences) 12 2) 0)))
+  (into [] sequences))
+
+(defn day02a
+  "Calcaulate int codes for puzzle input"
+  [sequences noun verb]
+  (first (intCode (modifyParameters sequences noun verb) 0)))
+
+(defn day02b
+  "Calcaulate int codes for puzzle input"
+  [sequences noun verb target]
+  (loop [noun noun verb verb]
+    (let [result (day02a sequences noun verb)]
+    (if (= result target)
+      (+ (* 100 noun) verb)
+      (recur (incNoun noun verb) (incVerb verb))
+    ))
+  )
+)
