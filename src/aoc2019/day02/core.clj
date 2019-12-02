@@ -29,16 +29,14 @@
   [verb]
   (if (= verb 99)
     0
-    (inc verb)
-  ))
+    (inc verb)))
 
 (defn incNoun
   "Increment noun"
   [noun verb]
   (if (= verb 99)
     (inc noun)
-    noun
-  ))
+    noun))
 
 (defn parse
   "read from input file"
@@ -58,9 +56,6 @@
   [sequences noun verb target]
   (loop [noun noun verb verb]
     (let [result (day02a sequences noun verb)]
-    (if (= result target)
-      (+ (* 100 noun) verb)
-      (recur (incNoun noun verb) (incVerb verb))
-    ))
-  )
-)
+      (if (= result target)
+        (+ (* 100 noun) verb)
+        (recur (incNoun noun verb) (incVerb verb))))))

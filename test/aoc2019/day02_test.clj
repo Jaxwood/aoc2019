@@ -34,5 +34,4 @@
   (testing "day02b"
     (def expected 8444)
     (def actual (day02b (parse "src/aoc2019/day02/input.txt") 0 0 19690720))
-    (is (= expected actual)))
-)
+    (is (= expected actual))))
