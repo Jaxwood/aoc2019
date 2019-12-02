@@ -1,14 +1,14 @@
 (ns aoc2019.day02.core)
 
 (defn getOperation
-  "get the operation based on val"
+  "Get the operation based on val"
   [val op1 op2]
   (if (= val 1)
     (+ op1 op2)
     (* op1 op2)))
 
 (defn intCode
-  "calculates int codes for a sequence"
+  "Calculates int codes for a sequence"
   [sequence idx]
   (let [val (get sequence idx)]
     (if (= val 99)
@@ -39,7 +39,7 @@
     noun))
 
 (defn parse
-  "read from input file"
+  "Read from input file"
   [filename]
   (def raw (slurp filename))
   (def firstLine (first (clojure.string/split raw #"\r\n")))
@@ -47,12 +47,12 @@
   (into [] sequences))
 
 (defn day02a
-  "Calcaulate int codes for puzzle input"
+  "Calculate int codes for puzzle input"
   [sequences noun verb]
   (first (intCode (modifyParameters sequences noun verb) 0)))
 
 (defn day02b
-  "Calcaulate int codes for puzzle input"
+  "Calculate int codes for puzzle input"
   [sequences noun verb target]
   (loop [noun noun verb verb]
     (let [result (day02a sequences noun verb)]
