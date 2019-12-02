@@ -38,6 +38,6 @@
     (def actual (calculateAdditionalFuel 100756 0))
     (is (= expected actual)))
   (testing "d"
-    (def expected 0)
+    (def expected 5077155)
     (def actual (day01b "src/aoc2019/day01/input.txt"))
     (is (= expected actual))))
