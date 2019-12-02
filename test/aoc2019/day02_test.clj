@@ -27,4 +27,8 @@
     (def expected 6)
     (def actual (getOperation 2 2 3))
     (is (= expected actual)))
+  (testing "day02a"
+    (def expected [])
+    (def actual (day02a "src/aoc2019/day02/input.txt"))
+    (is (= expected actual)))
 )
