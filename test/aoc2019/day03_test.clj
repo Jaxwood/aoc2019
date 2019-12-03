@@ -50,4 +50,8 @@
   (testing "follow"
     (def expected [[0 -1] [0 -2] [0 -3] [0 -2] [0 -1] [0 0]])
     (def actual (follow [] [0 0] [["D" 3] ["U" 3]]))
+    (is (= expected actual)))
+  (testing "day03a"
+    (def expected 209)
+    (def actual (day03a (clojure.string/split (slurp "src/aoc2019/day03/input.txt") #"\r\n")))
     (is (= expected actual))))
