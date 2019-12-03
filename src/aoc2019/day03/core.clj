@@ -46,7 +46,7 @@
   (+ (Math/abs x) (Math/abs y)))
 
 (defn day03a
-  ""
+  "Finds the manhanttan distance for the closest circuit"
   [input]
   (let [[f l] (map #(map toTuples (parse %)) input)
          path1 (into #{} (follow [] [0 0] f))
