@@ -4,7 +4,7 @@
 
 (deftest day03
   (testing "a"
-    (def expected 6)
+    (def expected [[["R" 8] ["U" 5] ["L" 5] ["D" 3]] [["U" 7] ["R" 6] ["D" 4] ["L" 4]]])
     (def actual (day03a ["R8,U5,L5,D3", "U7,R6,D4,L4"]))
     (is (= expected actual)))
   (testing "parse"
@@ -38,4 +38,8 @@
   (testing "path down"
     (def expected [[0 -1] [0 -2] [0 -3]])
     (def actual (path [0 0] ["D" 3]))
+    (is (= expected actual)))
+  (testing "follow"
+    (def expected [[0 -1] [0 -2] [0 -3] [0 -2] [0 -1] [0 0]])
+    (def actual (follow [] [0 0] [["D" 3] ["U" 3]]))
     (is (= expected actual))))

@@ -31,7 +31,18 @@
       ["D" cnt] (take cnt (generateY coord dec))
       :else (throw (Exception. "Unsupported direction"))))
 
+(defn follow
+  "Takes an accumulator a starting coord and a list of coords tuples and generates coords
+   e.g. [[R 3]] generates [[0 1] [0 2] [0 3]]"
+  [acc coord lst]
+    (if (empty? lst)
+      acc
+      (let [p (path coord (first lst))]
+        (follow (into acc p) (last p) (rest lst)))))
+
 (defn day03a
   ""
   [input]
-  (map parse input))
+  (let [[f l] (map #(map toTuples (parse %)) input)]
+    f
+  ))
