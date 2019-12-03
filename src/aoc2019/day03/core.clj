@@ -11,7 +11,17 @@
   [input]
   ((juxt #(subs %1 0 1) #(Integer/parseInt (subs %1 1))) input))
 
+(defn generateX
+  "Create infinite sequence of coordinates using supplied strategy on the X coordinate"
+  [[x y] strategy]
+  (map #(into [] [% y]) (iterate strategy (strategy x))))
+
+(defn generateY
+  "Create infinite sequence of coordinates using supplied strategy on the Y coordinate"
+  [[x y] strategy]
+  (map #(into [] [x %]) (iterate strategy (strategy y))))
+
 (defn day03a
   ""
   [input]
-  0)
+  (map parse input))

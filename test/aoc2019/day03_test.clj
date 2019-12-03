@@ -14,4 +14,12 @@
   (testing "toTuples"
     (def expected [["R" 8] ["U" 5] ["L" 5] ["D" 3]]))
     (def actual (map toTuples ["R8" "U5" "L5" "D3"]))
+    (is (= expected actual))
+  (testing "generateX"
+    (def expected [[1 0] [2 0] [3 0]]))
+    (def actual (take 3 (generateX [0 0] inc)))
+    (is (= expected actual))
+  (testing "generateY"
+    (def expected [[0 -1] [0 -2] [0 -3]]))
+    (def actual (take 3 (generateY [0 0] dec)))
     (is (= expected actual)))
