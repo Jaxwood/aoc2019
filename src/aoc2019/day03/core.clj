@@ -21,6 +21,16 @@
   [[x y] strategy]
   (map #(into [] [x %]) (iterate strategy (strategy y))))
 
+(defn path
+  "Generate path for coordinate"
+  [coord [direction count]]
+  (match [direction count]
+      ["R" cnt] (take cnt (generateX coord inc))
+      ["L" cnt] (take cnt (generateX coord dec))
+      ["U" cnt] (take cnt (generateY coord inc))
+      ["D" cnt] (take cnt (generateY coord dec))
+      :else (throw (Exception. "Unsupported direction"))))
+
 (defn day03a
   ""
   [input]

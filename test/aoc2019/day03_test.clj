@@ -22,4 +22,20 @@
   (testing "generateY"
     (def expected [[0 -1] [0 -2] [0 -3]]))
     (def actual (take 3 (generateY [0 0] dec)))
+    (is (= expected actual))
+  (testing "path right"
+    (def expected [[1 0] [2 0] [3 0]])
+    (def actual (path [0 0] ["R" 3]))
     (is (= expected actual)))
+  (testing "path left"
+    (def expected [[-1 0] [-2 0] [-3 0]])
+    (def actual (path [0 0] ["L" 3]))
+    (is (= expected actual)))
+  (testing "path up"
+    (def expected [[0 1] [0 2] [0 3]])
+    (def actual (path [0 0] ["U" 3]))
+    (is (= expected actual)))
+  (testing "path down"
+    (def expected [[0 -1] [0 -2] [0 -3]])
+    (def actual (path [0 0] ["D" 3]))
+    (is (= expected actual))))
