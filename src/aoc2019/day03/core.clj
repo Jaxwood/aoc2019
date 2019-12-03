@@ -9,9 +9,7 @@
 (defn toTuples
   "Convert raw coordinate string into tuples"
   [input]
-  (let [f (subs input 0 1)
-        r (Integer/parseInt (subs input 1))]
-    [f r]))
+  ((juxt #(subs %1 0 1) #(Integer/parseInt (subs %1 1))) input))
 
 (defn day03a
   ""
