@@ -40,9 +40,15 @@
       (let [p (path coord (first lst))]
         (follow (into acc p) (last p) (rest lst)))))
 
+(defn manhattan
+  "Calculate manhattan distance for coord"
+  [[x y]]
+  (+ (Math/abs x) (Math/abs y)))
+
 (defn day03a
   ""
   [input]
-  (let [[f l] (map #(map toTuples (parse %)) input)]
-    f
-  ))
+  (let [[f l] (map #(map toTuples (parse %)) input)
+         path1 (into #{} (follow [] [0 0] f))
+         path2 (into #{} (follow [] [0 0] l))]
+         (apply min (map manhattan (clojure.set/intersection path1 path2)))))
