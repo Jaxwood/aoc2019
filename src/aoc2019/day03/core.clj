@@ -45,10 +45,13 @@
   [[x y]]
   (+ (Math/abs x) (Math/abs y)))
 
+(defn intersections
+  "Finds the intersections between two lines"
+  [line1 line2]
+  (clojure.set/intersection (into #{} (follow [] [0 0] line1)) (into #{} (follow [] [0 0] line2))))
+
 (defn day03a
   "Finds the manhanttan distance for the closest circuit"
   [input]
-  (let [[f l] (map #(map toTuples (parse %)) input)
-         path1 (into #{} (follow [] [0 0] f))
-         path2 (into #{} (follow [] [0 0] l))]
-         (apply min (map manhattan (clojure.set/intersection path1 path2)))))
+  (let [[f l] (map #(map toTuples (parse %)) input)]
+  (apply min (map manhattan (intersections f l)))))
