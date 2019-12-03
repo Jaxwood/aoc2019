@@ -50,8 +50,22 @@
   [line1 line2]
   (clojure.set/intersection (into #{} (follow [] [0 0] line1)) (into #{} (follow [] [0 0] line2))))
 
+(defn steps
+  "Find the steps to a given intersection"
+  [target path]
+  (inc (count (take-while #(not (= target %)) path))))
+
 (defn day03a
   "Finds the manhanttan distance for the closest circuit"
   [input]
   (let [[f l] (map #(map toTuples (parse %)) input)]
   (apply min (map manhattan (intersections f l)))))
+
+(defn day03b
+  "Calculates the minimum steps for an intersection"
+  [input]
+  (let [[f l] (map #(map toTuples (parse %)) input)
+         line1 (follow [] [0 0] f)
+         line2 (follow [] [0 0] l)
+         intersect (intersections f l)]
+  (apply min (reduce #(cons (+ (steps %2 line1) (steps %2 line2)) %1) [] intersect))))
