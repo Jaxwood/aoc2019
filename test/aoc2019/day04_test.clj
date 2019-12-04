@@ -3,7 +3,19 @@
             [aoc2019.day04.core :refer :all]))
 
 (deftest day04
-  (testing "a"
-    (def expected 6)
-    (def actual (day04a []))
+  (testing "adjacent? - a"
+    (def expected true)
+    (def actual (adjacent? (str 111111)))
+    (is (= expected actual)))
+  (testing "adjacent? - b"
+    (def expected false)
+    (def actual (adjacent? (str 123789)))
+    (is (= expected actual)))
+  (testing "increments? - a"
+    (def expected false)
+    (def actual (increments? (str 223450)))
+    (is (= expected actual)))
+  (testing "increments? - b"
+    (def expected true)
+    (def actual (increments? (str 123789)))
     (is (= expected actual))))
