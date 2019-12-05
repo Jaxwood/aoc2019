@@ -13,17 +13,28 @@
    2: multiplies together positions of parameters 1, 2 and stores at parameter 3
    3: takes input and saves to position of parameter 1
    4: output value at parameter 1"
-  [oc]
+  [inst arr]
   (case oc 1 ()
         2 ()
         3 ()
         4 ()
         (throw (Exception. "Unsupported opcode"))))
 
+(defn digits
+  "extract digits and append leading zeros
+   1234 becomes [0 1 2 3 4]"
+  [candidate acc]
+  (if (= candidate 0)
+    (if (= (count acc) 5)
+      acc
+      (into (vec (take (- 5 (count acc)) (repeat 0))) acc))
+    (let [digit (mod candidate 10)]
+      (recur (int (/ candidate 10)) (cons digit acc)))))
+
 (defn parametermode
   "0: position mode - value stored at position
    1: immediate mode - parameter interpreted as value"
-  [pm]
+  [inst param]
   0)
 
 (defn pointer
