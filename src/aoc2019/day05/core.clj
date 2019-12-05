@@ -9,35 +9,11 @@
   (into [] sequences))
 
 (defn lookup
-  ""
+  "loop based on parameter mode"
   [arr mode val]
   (if (= mode 1)
     val
     (get arr val)))
-
-(defn opcode
-  "op: 1: adds together positions of parameters 1, 2 and stores at parameter 3
-       2: multiplies together positions of parameters 1, 2 and stores at parameter 3
-       3: takes input and saves to position of parameter 1
-       4: output value at parameter 1
-   pm: 0: position mode
-       1: immediate mode
-   a:     parameter 3
-   b:     parameter 2
-   c:     parameter 1"
-  [[a b c _ op] arr idx default]
-  (case op
-    1 (let [fst (get arr (+ idx 1))
-            snd (get arr (+ idx 2))
-            thd (get arr (+ idx 3))]
-        (update arr thd (constantly (+ (lookup arr b snd) (lookup arr c fst)))))
-    2 (let [fst (get arr (+ idx 1))
-            snd (get arr (+ idx 2))
-            thd (get arr (+ idx 3))]
-        (update arr thd (constantly (* (lookup arr b snd) (lookup arr c fst)))))
-    3 (update arr (get arr (+ idx 1)) (constantly default))
-    4 (lookup arr c (get arr (+ idx 1)))
-    (throw (Exception. "Unsupported opcode"))))
 
 (defn digits
   "extract digits and append leading zeros
@@ -52,7 +28,7 @@
 
 (defn pointer
   "moves pointer based on instruction"
-  [[a b c pm op]]
+  [op]
   (case op
     1 4
     2 4
@@ -60,12 +36,36 @@
     4 2
     (throw (Exception. "Unsupported opcode"))))
 
+(defn opcode
+  "op: 1: adds together positions of parameters 1, 2 and stores at parameter 3
+       2: multiplies together positions of parameters 1, 2 and stores at parameter 3
+       3: takes input and saves to position of parameter 1
+       4: output value at parameter 1
+   pm: 0: position mode
+       1: immediate mode
+   a:     parameter 3
+   b:     parameter 2
+   c:     parameter 1"
+  [arr idx default acc]
+  (let [[a b c _ op] (digits (get arr idx) [])
+        newIdx (+ idx (pointer op))]
+    (case op
+      1 (let [fst (get arr (+ idx 1))
+              snd (get arr (+ idx 2))
+              thd (get arr (+ idx 3))]
+          (opcode (update arr thd (constantly (+ (lookup arr b snd) (lookup arr c fst)))) newIdx default acc))
+      2 (let [fst (get arr (+ idx 1))
+              snd (get arr (+ idx 2))
+              thd (get arr (+ idx 3))]
+          (opcode (update arr thd (constantly (* (lookup arr b snd) (lookup arr c fst)))) newIdx default acc))
+      3 (opcode (update arr (get arr (+ idx 1)) (constantly default)) newIdx default acc)
+      4 (let [val (lookup arr c (get arr (+ idx 1)))]
+          (if (= 0 val)
+            (opcode arr newIdx default (cons val acc))
+            (cons val acc)))
+      (throw (Exception. "Unsupported opcode")))))
+
 (defn day05a
-  ""
+  "find solution for day05a"
   [instructions idx]
-  (let [inst (digits (get instructions idx) [])
-        op (opcode inst instructions idx 1)
-        newIdx (+ idx (pointer inst))]
-    (if (= 4 (last inst))
-      op
-      (recur op newIdx))))
+  (first (opcode instructions idx 1 [])))

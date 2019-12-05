@@ -5,19 +5,19 @@
 (deftest day05
   (testing "pointer a"
     (def expected 4)
-    (def actual (pointer [0 0 0 0 1]))
+    (def actual (pointer 1))
     (is (= expected actual)))
   (testing "pointer b"
     (def expected 4)
-    (def actual (pointer [0 0 0 0 2]))
+    (def actual (pointer 2))
     (is (= expected actual)))
   (testing "pointer c"
     (def expected 2)
-    (def actual (pointer [0 0 0 0 3]))
+    (def actual (pointer 3))
     (is (= expected actual)))
   (testing "pointer d"
     (def expected 2)
-    (def actual (pointer [0 0 0 0 4]))
+    (def actual (pointer 4))
     (is (= expected actual)))
   (testing "digits"
     (def expected [0 1 0 0 2])
@@ -32,6 +32,6 @@
     (def actual (digits 1 []))
     (is (= expected actual)))
   (testing "day05a"
-    (def expected 99)
+    (def expected 4511442)
     (def actual (day05a (parse "src/aoc2019/day05/input.txt") 0))
     (is (= expected actual))))
