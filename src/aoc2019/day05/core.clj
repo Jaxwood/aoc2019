@@ -8,6 +8,13 @@
   (def sequences (map #(Integer/parseInt %1) (clojure.string/split firstLine #",")))
   (into [] sequences))
 
+(defn lookup
+  ""
+  [arr mode val]
+  (if (= mode 1)
+    val
+    (get arr val)))
+
 (defn opcode
   "op: 1: adds together positions of parameters 1, 2 and stores at parameter 3
        2: multiplies together positions of parameters 1, 2 and stores at parameter 3
@@ -18,13 +25,19 @@
    a:     parameter 3
    b:     parameter 2
    c:     parameter 1"
-  [[a b c pm op] arr]
+  [[a b c _ op] arr idx default]
   (case op
-        1 ()
-        2 ()
-        3 ()
-        4 ()
-        (throw (Exception. "Unsupported opcode"))))
+    1 (let [fst (get arr (+ idx 1))
+            snd (get arr (+ idx 2))
+            thd (get arr (+ idx 3))]
+        (update arr thd (constantly (+ (lookup arr b snd) (lookup arr c fst)))))
+    2 (let [fst (get arr (+ idx 1))
+            snd (get arr (+ idx 2))
+            thd (get arr (+ idx 3))]
+        (update arr thd (constantly (* (lookup arr b snd) (lookup arr c fst)))))
+    3 (update arr (get arr (+ idx 1)) (constantly default))
+    4 (lookup arr c (get arr (+ idx 1)))
+    (throw (Exception. "Unsupported opcode"))))
 
 (defn digits
   "extract digits and append leading zeros
@@ -39,16 +52,20 @@
 
 (defn pointer
   "moves pointer based on instruction"
-  [in]
-  (case in
+  [[a b c pm op]]
+  (case op
     1 4
     2 4
     3 2
-    4 2))
+    4 2
+    (throw (Exception. "Unsupported opcode"))))
 
-(defn instruction
-  "parse the instruction
-  opcode: two rightmost digits
-  parametermode: 3 leftmost digits"
-  [inst]
-  0)
+(defn day05a
+  ""
+  [instructions idx]
+  (let [inst (digits (get instructions idx) [])
+        op (opcode inst instructions idx 1)
+        newIdx (+ idx (pointer inst))]
+    (if (= 4 (last inst))
+      op
+      (recur op newIdx))))
