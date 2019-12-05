@@ -9,12 +9,18 @@
   (into [] sequences))
 
 (defn opcode
-  "1: adds together positions of parameters 1, 2 and stores at parameter 3
-   2: multiplies together positions of parameters 1, 2 and stores at parameter 3
-   3: takes input and saves to position of parameter 1
-   4: output value at parameter 1"
-  [inst arr]
-  (case oc 1 ()
+  "op: 1: adds together positions of parameters 1, 2 and stores at parameter 3
+       2: multiplies together positions of parameters 1, 2 and stores at parameter 3
+       3: takes input and saves to position of parameter 1
+       4: output value at parameter 1
+   pm: 0: position mode
+       1: immediate mode
+   a:     parameter 3
+   b:     parameter 2
+   c:     parameter 1"
+  [[a b c pm op] arr]
+  (case op
+        1 ()
         2 ()
         3 ()
         4 ()
@@ -30,12 +36,6 @@
       (into (vec (take (- 5 (count acc)) (repeat 0))) acc))
     (let [digit (mod candidate 10)]
       (recur (int (/ candidate 10)) (cons digit acc)))))
-
-(defn parametermode
-  "0: position mode - value stored at position
-   1: immediate mode - parameter interpreted as value"
-  [inst param]
-  0)
 
 (defn pointer
   "moves pointer based on instruction"

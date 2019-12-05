@@ -19,18 +19,6 @@
     (def expected 2)
     (def actual (pointer 4))
     (is (= expected actual)))
-  (testing "paramtermode a"
-    (def expected 0)
-    (def actual (parametermode 1002 1))
-    (is (= expected actual)))
-  (testing "paramtermode b"
-    (def expected 1)
-    (def actual (parametermode 1002 2))
-    (is (= expected actual)))
-  (testing "paramtermode c"
-    (def expected 0)
-    (def actual (parametermode 1002 3))
-    (is (= expected actual)))
   (testing "digits"
     (def expected [0 1 0 0 2])
     (def actual (digits 1002 []))
