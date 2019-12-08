@@ -1,7 +1,7 @@
 (ns aoc2019.day06.core)
 
 (defn parse
-  "parse lines into objects"
+  "parse lines into tuples"
   [raw]
   (map #(clojure.string/split % #"\)") (clojure.string/split raw #"\r\n")))
 
