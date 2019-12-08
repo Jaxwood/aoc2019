@@ -31,4 +31,12 @@
     (def expected 151345)
     (def actual (day06a "src/aoc2019/day06/input.txt"))
     (is (= expected actual)))
+  (testing "you"
+    (def expected true)
+    (def actual (you ["K", ["YOU"]] "YOU"))
+    (is (= expected actual)))
+  (testing "day06b"
+    (def expected "K")
+    (def actual (day06b "src/aoc2019/day06/b.txt"))
+    (is (= expected actual)))
   )

@@ -26,3 +26,15 @@
   (let [raw (slurp filename)
         objects (reduce #(tuple->map %1 %2) {} (parse raw))]
         (apply + (map #(orbit-counter objects (get objects %) 0) (keys objects)))))
+
+(defn you
+  "find YOU in the input"
+  [[k v] target]
+  (some #(= % target) v))
+
+(defn day06b
+  "find the distance between YOU and SAN"
+  [filename]
+  (let [raw (slurp filename)
+        objects (reduce #(tuple->map %1 %2) {} (parse raw))]
+        (first (keys (filter #(you % "YOU") objects)))))
