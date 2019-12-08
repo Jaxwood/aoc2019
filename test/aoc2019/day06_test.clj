@@ -35,4 +35,12 @@
     (def expected ["D"])
     (def actual (neighbors { "A" ["B" "C"], "B" ["D"], "C" ["E"] } ["A"] "B" ))
     (is (= expected actual)))
+  (testing "neighbors"
+    (def expected [])
+    (def actual (neighbors { "A" ["B"], "B" ["D"] } ["B"] "D" ))
+    (is (= expected actual)))
+  (testing "day06b"
+    (def expected true)
+    (def actual (day06b "src/aoc2019/day06/b.txt"))
+    (is (= expected actual)))
   )

@@ -31,7 +31,15 @@
   [m visited target]
   (let [orbits (get m target)
         orbiting (keys (filter #(finder % target) m))]
-        (vec (difference (set (into orbiting orbits)) (set visited)))))
+    (vec (difference (set (into orbiting orbits)) (set visited)))))
+
+(defn santa-finder
+  "find santa among the planets"
+  [m k visited target]
+  (let [planets (neighbors m visited (first k))]
+    (if (some #(= % target) planets)
+      true
+      (recur m (into (drop 1 k) planets) (conj visited (first k)) target))))
 
 (defn day06a
   "find the total number of orbits"
@@ -39,3 +47,11 @@
   (let [raw (slurp filename)
         objects (reduce #(tuple->map %1 %2) {} (parse raw))]
     (apply + (map #(orbit-counter objects (get objects %) 0) (keys objects)))))
+
+(defn day06b
+  "find santa"
+  [filename]
+  (let [raw (slurp filename)
+        objects (reduce #(tuple->map %1 %2) {} (parse raw))
+        start (vec (keys (filter #(finder % "YOU") objects)))]
+        (santa-finder objects start ["YOU"] "SAN")))
