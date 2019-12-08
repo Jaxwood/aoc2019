@@ -37,4 +37,4 @@
   [filename]
   (let [raw (slurp filename)
         objects (reduce #(tuple->map %1 %2) {} (parse raw))]
-        (first (keys (filter #(you % "YOU") objects)))))
+        ((comp first keys) (filter #(you % "YOU") objects))))
