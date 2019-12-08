@@ -40,7 +40,7 @@
     (def actual (neighbors { "A" ["B"], "B" ["D"] } ["B"] "D" ))
     (is (= expected actual)))
   (testing "day06b"
-    (def expected true)
+    (def expected 5)
     (def actual (day06b "src/aoc2019/day06/b.txt"))
     (is (= expected actual)))
   )

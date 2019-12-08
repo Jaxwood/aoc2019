@@ -36,10 +36,11 @@
 (defn santa-finder
   "find santa among the planets"
   [m k visited target]
-  (let [planets (neighbors m visited (first k))]
+  (let [[p sum'] (first k)
+        planets (neighbors m visited p)]
     (if (some #(= % target) planets)
-      true
-      (recur m (into (drop 1 k) planets) (conj visited (first k)) target))))
+      sum'
+      (recur m (into (drop 1 k) (map #(conj [] % (inc sum')) planets)) (conj visited p) target))))
 
 (defn day06a
   "find the total number of orbits"
@@ -54,4 +55,4 @@
   (let [raw (slurp filename)
         objects (reduce #(tuple->map %1 %2) {} (parse raw))
         start (vec (keys (filter #(finder % "YOU") objects)))]
-        (santa-finder objects start ["YOU"] "SAN")))
+        (santa-finder objects (vector (conj start 1)) ["YOU"] "SAN")))
