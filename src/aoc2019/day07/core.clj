@@ -82,18 +82,18 @@
 
 (defn thrusters
   "find highest signal that can be sent to the thrusters"
-  [program settings idx ]
+  [program settings idx]
   (try
-  (let [a (first (opcode program idx [(get settings 0) 0] []))
-        b (first (opcode program idx [(get settings 1) a] []))
-        c (first (opcode program idx [(get settings 2) b] []))
-        d (first (opcode program idx [(get settings 3) c] []))
-        e (first (opcode program idx [(get settings 4) d] []))]
-    e)
+    (let [a (first (opcode program idx [(get settings 0) 0] []))
+          b (first (opcode program idx [(get settings 1) a] []))
+          c (first (opcode program idx [(get settings 2) b] []))
+          d (first (opcode program idx [(get settings 3) c] []))
+          e (first (opcode program idx [(get settings 4) d] []))]
+      e)
     (catch Exception e 0)))
 
 (defn day07a
-  ""
+  "find the highest signal"
   [program perms acc]
   (if (empty? perms)
     (apply max acc)
