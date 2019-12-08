@@ -33,7 +33,7 @@
   (some #(= % target) v))
 
 (defn day06b
-  "find the distance between YOU and SAN"
+  "find the orbits between YOU and SAN"
   [filename]
   (let [raw (slurp filename)
         objects (reduce #(tuple->map %1 %2) {} (parse raw))]
