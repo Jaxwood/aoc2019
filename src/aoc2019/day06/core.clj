@@ -36,11 +36,11 @@
 (defn santa-finder
   "find santa among the planets"
   [m k visited target]
-  (let [[p sum'] (first k)
+  (let [[p sum] (first k)
         planets (neighbors m visited p)]
     (if (some #(= % target) planets)
-      sum'
-      (recur m (into (drop 1 k) (map #(conj [] % (inc sum')) planets)) (conj visited p) target))))
+      sum
+      (recur m (into (drop 1 k) (map #(conj [] % (inc sum)) planets)) (conj visited p) target))))
 
 (defn day06a
   "find the total number of orbits"
