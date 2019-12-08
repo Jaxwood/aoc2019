@@ -3,5 +3,5 @@
   :url "https://github.com/Jaxwood/aoc2019"
   :license {:name "MIT"
             :url "https://opensource.org/licenses/MIT"}
-  :dependencies [[org.clojure/clojure "1.10.0"] [org.clojure/core.match "0.3.0"]]
+  :dependencies [[org.clojure/clojure "1.10.0"] [org.clojure/core.match "0.3.0"] [org.clojure/math.combinatorics "0.1.6"]]
   :repl-options {:init-ns aoc2019.day03.core})
