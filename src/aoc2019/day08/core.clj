@@ -14,7 +14,7 @@
      :result (* ones twos)}))
 
 (defn transpose
-  ""
+  "Transpose implementation"
   [m]
   (apply mapv vector m))
 
@@ -31,7 +31,6 @@
 
 (defn day08b
   "Find the hidden message"
-  [filename]
   [filename]
   (let [raw (slurp filename)
         parsed (flatten (vector (map #(Integer/parseInt (str %)) raw)))
