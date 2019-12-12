@@ -37,53 +37,58 @@
     5 3
     6 3
     7 4
-    8 4
-    (throw (Exception. "Unsupported opcode"))))
+    8 4))
+
+(defn print-instruction
+  "prints the instruction"
+  [op]
+  (case op
+    1 (println "add")
+    2 (println "multiply")
+    3 (println "input")
+    4 (println "output")
+    5 (println "jump-if-true")
+    6 (println "jump-if-false")
+    7 (println "less than")
+    8 (println "equals")))
 
 (defn opcode
-  "op: 1: adds together positions of parameters 1, 2 and stores at parameter 3
-       2: multiplies together positions of parameters 1, 2 and stores at parameter 3
-       3: takes input and saves to position of parameter 1
-       4: output value at parameter 1
-   pm: 0: position mode
-       1: immediate mode
-   a:     parameter 3
-   b:     parameter 2
-   c:     parameter 1"
-  [arr idx default acc]
+  ""
+  [arr idx signals]
   (let [[a b c _ op] (digits (get arr idx) [])
         newIdx (+ idx (pointer op))
         fst (get arr (+ idx 1))
         snd (get arr (+ idx 2))
         thd (get arr (+ idx 3))]
+    ;; (print-instruction op)
     (case op
-      1 (opcode (update arr thd (constantly (+ (lookup arr b snd) (lookup arr c fst)))) newIdx default acc)
-      2 (opcode (update arr thd (constantly (* (lookup arr b snd) (lookup arr c fst)))) newIdx default acc)
-      3 (opcode (update arr fst (constantly default)) newIdx default acc)
+      1 (opcode (update arr thd (constantly (+ (lookup arr b snd) (lookup arr c fst)))) newIdx signals)
+      2 (opcode (update arr thd (constantly (* (lookup arr b snd) (lookup arr c fst)))) newIdx signals)
+      3 (opcode (update arr fst (constantly signals)) newIdx signals)
       4 (let [val (lookup arr c fst)]
           (if (= 0 val)
-            (opcode arr newIdx default (cons val acc))
-            (cons val acc)))
+            (opcode arr newIdx signals)
+            val))
       5 (if (= 0 (lookup arr c fst))
-          (opcode arr newIdx default acc)
-          (opcode arr (lookup arr b snd) default acc))
+          (opcode arr newIdx signals)
+          (opcode arr (lookup arr b snd) signals))
       6 (if (= 0 (lookup arr c fst))
-          (opcode arr (lookup arr b snd) default acc)
-          (opcode arr newIdx default acc))
+          (opcode arr (lookup arr b snd) signals)
+          (opcode arr newIdx signals))
       7 (if (< (lookup arr c fst) (lookup arr b snd))
-          (opcode (update arr thd (constantly 1)) newIdx default acc)
-          (opcode (update arr thd (constantly 0)) newIdx default acc))
+          (opcode (update arr thd (constantly 1)) newIdx signals)
+          (opcode (update arr thd (constantly 0)) newIdx signals))
       8 (if (= (lookup arr c fst) (lookup arr b snd))
-          (opcode (update arr thd (constantly 1)) newIdx default acc)
-          (opcode (update arr thd (constantly 0)) newIdx default acc))
-      (throw (Exception. "Unsupported opcode")))))
+          (opcode (update arr thd (constantly 1)) newIdx signals)
+          (opcode (update arr thd (constantly 0)) newIdx signals))
+      )))
 
 (defn day05a
   "find solution for day05a"
   [instructions idx]
-  (first (opcode instructions idx 1 [])))
+  (opcode instructions idx 1))
 
 (defn day05b
   "find solution for day05b"
   [instructions idx]
-  (first (opcode instructions idx 5 [])))
+  (opcode instructions idx 5))
