@@ -10,10 +10,10 @@
 
 (defn lookup
   "loop based on parameter mode"
-  [arr mode val]
+  [instruction mode val]
   (if (= mode 1)
     val
-    (get arr val)))
+    (get instruction val)))
 
 (defn digits
   "extract digits and append leading zeros
@@ -54,50 +54,60 @@
     8 (println "equals")
     (println "unknown" op)))
 
+(def memoryStructure {:program []
+                      :pointer 0
+                      :signals []
+                      :output 0})
+
 (defn opcode
   ""
-  [arr idx signals]
-  (let [[a b c _ op] (digits (get arr idx) [])
-        newIdx (+ idx (pointer op))
-        fst (get arr (+ idx 1))
-        snd (get arr (+ idx 2))
-        thd (get arr (+ idx 3))]
-    ;;(print-instruction op)
+  [memory]
+  (let [instruction (get memory :program)
+        signals (get memory :signals)
+        instructionPointer (get memory :pointer)
+        [a b c _ op] (digits (get instruction instructionPointer) [])
+        updatedPointer (+ instructionPointer (pointer op))
+        fst (get instruction (+ instructionPointer 1))
+        snd (get instruction (+ instructionPointer 2))
+        thd (get instruction (+ instructionPointer 3))]
+    ;; (print-instruction op)
     (case op
-      1 (opcode (update arr thd (constantly (+ (lookup arr b snd) (lookup arr c fst)))) newIdx signals)
-      2 (opcode (update arr thd (constantly (* (lookup arr b snd) (lookup arr c fst)))) newIdx signals)
-      3 (opcode (update arr fst (constantly (first signals))) newIdx (drop 1 signals))
-      4 (let [val (lookup arr c fst)]
+      1 (opcode {:program (update instruction thd (constantly (+ (lookup instruction b snd) (lookup instruction c fst)))) :pointer updatedPointer :signals signals})
+      2 (opcode {:program (update instruction thd (constantly (* (lookup instruction b snd) (lookup instruction c fst)))) :pointer updatedPointer :signals signals})
+      3 (if (empty? signals)
+          {:pointer instructionPointer :output 0 :program instruction :signals signals}
+          (opcode {:program (update instruction fst (constantly (first signals))) :pointer updatedPointer :signals (rest signals)}))
+      4 (let [val (lookup instruction c fst)]
           (if (= 0 val)
-            (opcode arr newIdx signals)
-            val))
-      5 (if (= 0 (lookup arr c fst))
-          (opcode arr newIdx signals)
-          (opcode arr (lookup arr b snd) signals))
-      6 (if (= 0 (lookup arr c fst))
-          (opcode arr (lookup arr b snd) signals)
-          (opcode arr newIdx signals))
-      7 (if (< (lookup arr c fst) (lookup arr b snd))
-          (opcode (update arr thd (constantly 1)) newIdx signals)
-          (opcode (update arr thd (constantly 0)) newIdx signals))
-      8 (if (= (lookup arr c fst) (lookup arr b snd))
-          (opcode (update arr thd (constantly 1)) newIdx signals)
-          (opcode (update arr thd (constantly 0)) newIdx signals))
-      9 0)))
+            (opcode {:program instruction :pointer updatedPointer :signals signals})
+            {:pointer updatedPointer :output val :program instruction :signals signals}))
+      5 (if (= 0 (lookup instruction c fst))
+          (opcode {:program instruction :pointer updatedPointer :signals signals})
+          (opcode {:program instruction :pointer (lookup instruction b snd) :signals signals}))
+      6 (if (= 0 (lookup instruction c fst))
+          (opcode {:program instruction :pointer (lookup instruction b snd) :signals signals})
+          (opcode {:program instruction :pointer updatedPointer :signals signals}))
+      7 (if (< (lookup instruction c fst) (lookup instruction b snd))
+          (opcode {:program (update instruction thd (constantly 1)) :pointer updatedPointer :signals signals})
+          (opcode {:program (update instruction thd (constantly 0)) :pointer updatedPointer :signals signals}))
+      8 (if (= (lookup instruction c fst) (lookup instruction b snd))
+          (opcode {:program (update instruction thd (constantly 1)) :pointer updatedPointer :signals signals})
+          (opcode {:program (update instruction thd (constantly 0)) :pointer updatedPointer :signals signals}))
+      9 {:pointer instructionPointer :output op :program instruction :signals signals})))
 
 (defn thrusters
   "find highest signal that can be sent to the thrusters"
-  [program settings idx]
-  (let [a (opcode program idx [(get settings 0) 0])
-        b (opcode program idx [(get settings 1) a])
-        c (opcode program idx [(get settings 2) b])
-        d (opcode program idx [(get settings 3) c])
-        e (opcode program idx [(get settings 4) d])]
-    e))
+  [program settings pointer]
+  (let [a (opcode {:program program :pointer pointer :signals [(get settings 0) 0]})
+        b (opcode {:program program :pointer pointer :signals [(get settings 1) (get a :output)]})
+        c (opcode {:program program :pointer pointer :signals [(get settings 2) (get b :output)]})
+        d (opcode {:program program :pointer pointer :signals [(get settings 3) (get c :output)]})
+        e (opcode {:program program :pointer pointer :signals [(get settings 4) (get d :output)]})]
+    [a b c d e]))
 
 (defn day07a
   "find the highest signal"
   [program perms acc]
   (if (empty? perms)
     (apply max acc)
-    (recur program (rest perms) (conj acc (thrusters program (first perms) 0)))))
+    (recur program (rest perms) (conj acc (get (last (thrusters program (first perms) 0)) :output)))))
