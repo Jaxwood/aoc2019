@@ -54,6 +54,7 @@
     8 (println "equals")
     (println "unknown" op)))
 
+;; The memory structure used
 (def memoryStructure {:program []
                       :pointer 0
                       :signals []
@@ -61,7 +62,7 @@
                       :done false})
 
 (defn opcode
-  ""
+  "Exectute instruction"
   [memory]
   (if (= true (:done memory))
     memory
@@ -111,7 +112,7 @@
       [a b c d e])))
 
 (defn feedback
-  ""
+  "Exectute the feedback loop"
   [[a b c d e]]
   (let [a' (opcode {:program (:program a) :pointer (:pointer a) :signals (vec (conj (:signals a) (:output e))) :output (:output a)})
         b' (opcode {:program (:program b) :pointer (:pointer b) :signals (vec (conj (:signals b) (:output a'))) :output (:output b)})
@@ -130,7 +131,7 @@
     (recur program (rest perms) (conj acc (get (last (thrusters program (first perms) 0)) :output)))))
 
 (defn day07b
-  ""
+  "find the best phase settings"
   [program perms acc]
   (if (empty? perms)
     (apply max acc)
