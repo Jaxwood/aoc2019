@@ -64,40 +64,38 @@
 (defn opcode
   "Exectute instruction"
   [memory]
-  (if (= true (:done memory))
-    memory
-    (let [instruction (get memory :program)
-          signals (get memory :signals)
-          instructionPointer (get memory :pointer)
-          [a b c _ op] (digits (get instruction instructionPointer) [])
-          updatedPointer (+ instructionPointer (pointer op))
-          fst (get instruction (+ instructionPointer 1))
-          snd (get instruction (+ instructionPointer 2))
-          thd (get instruction (+ instructionPointer 3))]
+  (let [instruction (get memory :program)
+        signals (get memory :signals)
+        instructionPointer (get memory :pointer)
+        [a b c _ op] (digits (get instruction instructionPointer) [])
+        updatedPointer (+ instructionPointer (pointer op))
+        fst (get instruction (+ instructionPointer 1))
+        snd (get instruction (+ instructionPointer 2))
+        thd (get instruction (+ instructionPointer 3))]
     ;; (print-instruction op)
-      (case op
-        1 (opcode {:program (update instruction thd (constantly (+ (lookup instruction b snd) (lookup instruction c fst)))) :pointer updatedPointer :signals signals})
-        2 (opcode {:program (update instruction thd (constantly (* (lookup instruction b snd) (lookup instruction c fst)))) :pointer updatedPointer :signals signals})
-        3 (if (empty? signals)
-            {:done false :pointer instructionPointer :output 0 :program instruction :signals signals}
-            (opcode {:program (update instruction fst (constantly (first signals))) :pointer updatedPointer :signals (rest signals)}))
-        4 (let [val (lookup instruction c fst)]
-            (if (= 0 val)
-              (opcode {:program instruction :pointer updatedPointer :signals signals})
-              {:done false :pointer updatedPointer :output val :program instruction :signals signals}))
-        5 (if (= 0 (lookup instruction c fst))
+    (case op
+      1 (opcode {:program (update instruction thd (constantly (+ (lookup instruction b snd) (lookup instruction c fst)))) :pointer updatedPointer :signals signals})
+      2 (opcode {:program (update instruction thd (constantly (* (lookup instruction b snd) (lookup instruction c fst)))) :pointer updatedPointer :signals signals})
+      3 (if (empty? signals)
+          {:done false :pointer instructionPointer :output 0 :program instruction :signals signals}
+          (opcode {:program (update instruction fst (constantly (first signals))) :pointer updatedPointer :signals (rest signals)}))
+      4 (let [val (lookup instruction c fst)]
+          (if (= 0 val)
             (opcode {:program instruction :pointer updatedPointer :signals signals})
-            (opcode {:program instruction :pointer (lookup instruction b snd) :signals signals}))
-        6 (if (= 0 (lookup instruction c fst))
-            (opcode {:program instruction :pointer (lookup instruction b snd) :signals signals})
-            (opcode {:program instruction :pointer updatedPointer :signals signals}))
-        7 (if (< (lookup instruction c fst) (lookup instruction b snd))
-            (opcode {:program (update instruction thd (constantly 1)) :pointer updatedPointer :signals signals})
-            (opcode {:program (update instruction thd (constantly 0)) :pointer updatedPointer :signals signals}))
-        8 (if (= (lookup instruction c fst) (lookup instruction b snd))
-            (opcode {:program (update instruction thd (constantly 1)) :pointer updatedPointer :signals signals})
-            (opcode {:program (update instruction thd (constantly 0)) :pointer updatedPointer :signals signals}))
-        9 {:done true :program [] :pointer 0 :signals []  :output 0}))))
+            {:done false :pointer updatedPointer :output val :program instruction :signals signals}))
+      5 (if (= 0 (lookup instruction c fst))
+          (opcode {:program instruction :pointer updatedPointer :signals signals})
+          (opcode {:program instruction :pointer (lookup instruction b snd) :signals signals}))
+      6 (if (= 0 (lookup instruction c fst))
+          (opcode {:program instruction :pointer (lookup instruction b snd) :signals signals})
+          (opcode {:program instruction :pointer updatedPointer :signals signals}))
+      7 (if (< (lookup instruction c fst) (lookup instruction b snd))
+          (opcode {:program (update instruction thd (constantly 1)) :pointer updatedPointer :signals signals})
+          (opcode {:program (update instruction thd (constantly 0)) :pointer updatedPointer :signals signals}))
+      8 (if (= (lookup instruction c fst) (lookup instruction b snd))
+          (opcode {:program (update instruction thd (constantly 1)) :pointer updatedPointer :signals signals})
+          (opcode {:program (update instruction thd (constantly 0)) :pointer updatedPointer :signals signals}))
+      9 {:done true :program [] :pointer 0 :signals [] :output 0})))
 
 (defn thrusters
   "find highest signal that can be sent to the thrusters"
