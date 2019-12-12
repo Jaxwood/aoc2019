@@ -128,3 +128,10 @@
   (if (empty? perms)
     (apply max acc)
     (recur program (rest perms) (conj acc (get (last (thrusters program (first perms) 0)) :output)))))
+
+(defn day07b
+  ""
+  [program perms acc]
+  (if (empty? perms)
+    (apply max acc)
+    (recur program (rest perms) (conj acc (feedback (thrusters program (first perms) 0))))))
