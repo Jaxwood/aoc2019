@@ -43,3 +43,8 @@
       (if (= true (los? galaxy candidate target))
         (recur (rest galaxy) candidate (inc acc))
         (recur (rest galaxy) candidate acc)))))
+
+(defn find-radar-station
+  "finds the planet with most visible neighbor planets"
+  [galaxy]
+  (apply max (map #(planet-counter galaxy %1 0) galaxy)))

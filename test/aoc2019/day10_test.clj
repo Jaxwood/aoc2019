@@ -18,4 +18,8 @@
   (testing "count visible planets"
     (def expected 8)
     (def actual (planet-counter [[1 0] [4 0] [0 2] [1 2] [2 2] [3 2] [4 2] [4 3] [3 4] [4 4]] [3 4] 0))
-    (is (= expected actual))))
+    (is (= expected actual)))
+  (testing "find radar station")
+    (def expected 8)
+    (def actual (find-radar-station [[1 0] [4 0] [0 2] [1 2] [2 2] [3 2] [4 2] [4 3] [3 4] [4 4]]))
+    (is (= expected actual)))
