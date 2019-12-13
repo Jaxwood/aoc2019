@@ -1,5 +1,24 @@
 (ns aoc2019.day10.core)
 
+(defn lines->galaxy
+  "Parse raw lines into tuples"
+  [lines idx acc]
+  (if (empty? lines)
+    acc
+    (let [line (first lines)]
+      (recur (rest lines) (inc idx)
+       (into acc
+             (map (fn [[x y]] [x idx])
+                  (filter (fn [[x y]] (= y \#))
+                          (map-indexed (fn [idx item] [idx item]) line))))))))
+
+(defn parse
+  "parse the raw input into a tuple based coordinate system"
+  [filename]
+  (let [raw (slurp filename)
+        lines (clojure.string/split raw #"\r\n")]
+    (lines->galaxy lines 0 [])))
+
 (defn los?
   "Given two coordinates and a coordinate system
    examine if there is line of sight between the coordinates
