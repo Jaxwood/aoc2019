@@ -16,14 +16,6 @@
     1 val
     2 (get instruction (+ base val) 0)))
 
-(defn unsafe-lookup
-  "loop based on parameter mode"
-  [instruction mode val base]
-  (case mode
-    0 (get instruction val)
-    1 val
-    2 (get instruction (+ base val))))
-
 (defn digits
   "extract digits and append leading zeros
    1234 becomes [0 1 2 3 4]"
@@ -51,7 +43,7 @@
     0 op))
 
 (defn print-mode
-  ""
+  "print the mode"
   [mode]
   (case mode
     0 "position mode for"
@@ -82,13 +74,14 @@
                       :done false})
 
 (defn safe-update
-  ""
+  "Updates the instruction set and will increment memory if not enough space"
   [instruction idx func]
   (if (>= idx (count instruction))
     (update (vec (concat instruction (take (- idx (count instruction)) (repeat 0)))) idx func)
     (update instruction idx func)))
+
 (defn write-index
-  ""
+  "Find the index for the write operation"
   [mode idx base]
   (case mode
     0 idx
@@ -107,16 +100,16 @@
         fst (get instruction (+ instructionPointer 1))
         snd (get instruction (+ instructionPointer 2))
         thd (get instruction (+ instructionPointer 3))]
-    ;; (print-instruction op c b a fst snd thd)
+    ;;(print-instruction op c b a fst snd thd)
     (case op
-      1 (opcode {:program (safe-update instruction (write-index a thd base) (constantly (+ (lookup instruction b snd base) (lookup instruction c fst base))))
-                 :pointer updatedPointer
-                 :signals signals
-                 :base base})
-      2 (opcode {:program (safe-update instruction (write-index a thd base) (constantly (* (lookup instruction b snd base) (lookup instruction c fst base))))
-                 :pointer updatedPointer
-                 :signals signals
-                 :base base})
+      1 (recur {:program (safe-update instruction (write-index a thd base) (constantly (+ (lookup instruction b snd base) (lookup instruction c fst base))))
+                :pointer updatedPointer
+                :signals signals
+                :base base})
+      2 (recur {:program (safe-update instruction (write-index a thd base) (constantly (* (lookup instruction b snd base) (lookup instruction c fst base))))
+                :pointer updatedPointer
+                :signals signals
+                :base base})
       3 (if (empty? signals)
           {:done false
            :pointer instructionPointer
@@ -124,13 +117,13 @@
            :program instruction
            :signals signals
            :base base}
-          (opcode {:program (safe-update instruction (write-index c fst base) (constantly (first signals)))
-                   :pointer updatedPointer
-                   :signals (rest signals)
-                   :base base}))
-      4 (let [val (unsafe-lookup instruction c fst base)]
+          (recur {:program (safe-update instruction (write-index c fst base) (constantly (first signals)))
+                  :pointer updatedPointer
+                  :signals (rest signals)
+                  :base base}))
+      4 (let [val (lookup instruction c fst base)]
           (if (= 0 val)
-            (opcode {:program instruction :output val :pointer updatedPointer :signals signals :base base})
+            (recur {:program instruction :output val :pointer updatedPointer :signals signals :base base})
             {:done false
              :pointer updatedPointer
              :output val
@@ -138,57 +131,54 @@
              :signals signals
              :base base}))
       5 (if (= 0 (lookup instruction c fst base))
-          (opcode {:program instruction
-                   :pointer updatedPointer
-                   :signals signals
-                   :base base})
-          (opcode {:program instruction
-                   :pointer (lookup instruction b snd base)
-                   :signals signals
-                   :base base}))
+          (recur {:program instruction
+                  :pointer updatedPointer
+                  :signals signals
+                  :base base})
+          (recur {:program instruction
+                  :pointer (lookup instruction b snd base)
+                  :signals signals
+                  :base base}))
       6 (if (= 0 (lookup instruction c fst base))
-          (opcode {:program instruction
-                   :pointer (lookup instruction b snd base)
-                   :signals signals
-                   :base base})
-          (opcode {:program instruction
-                   :pointer updatedPointer
-                   :signals signals
-                   :base base}))
+          (recur {:program instruction
+                  :pointer (lookup instruction b snd base)
+                  :signals signals
+                  :base base})
+          (recur {:program instruction
+                  :pointer updatedPointer
+                  :signals signals
+                  :base base}))
       7 (if (< (lookup instruction c fst base) (lookup instruction b snd base))
-          (opcode {:program (safe-update instruction (write-index a thd base) (constantly 1))
-                   :pointer updatedPointer
-                   :signals signals
-                   :base base})
-          (opcode {:program (safe-update instruction (write-index a thd base) (constantly 0))
-                   :pointer updatedPointer
-                   :signals signals
-                   :base base}))
+          (recur {:program (safe-update instruction (write-index a thd base) (constantly 1))
+                  :pointer updatedPointer
+                  :signals signals
+                  :base base})
+          (recur {:program (safe-update instruction (write-index a thd base) (constantly 0))
+                  :pointer updatedPointer
+                  :signals signals
+                  :base base}))
       8 (if (= (lookup instruction c fst base) (lookup instruction b snd base))
-          (opcode {:program (safe-update instruction (write-index a thd base) (constantly 1))
-                   :pointer updatedPointer
-                   :signals signals
-                   :base base})
-          (opcode {:program (safe-update instruction (write-index a thd base) (constantly 0))
-                   :pointer updatedPointer
-                   :signals signals
-                   :base base}))
+          (recur {:program (safe-update instruction (write-index a thd base) (constantly 1))
+                  :pointer updatedPointer
+                  :signals signals
+                  :base base})
+          (recur {:program (safe-update instruction (write-index a thd base) (constantly 0))
+                  :pointer updatedPointer
+                  :signals signals
+                  :base base}))
       9 (let [updatedBase (+ (lookup instruction c fst base) base)]
-          (opcode {:program instruction
-                   :pointer updatedPointer
-                   :signals signals
-                   :base updatedBase}))
+          (recur {:program instruction
+                  :pointer updatedPointer
+                  :signals signals
+                  :base updatedBase}))
       0 {:done true})))
 
-(defn runner
-  ""
-  [program acc]
-  (let [state (opcode program)]
-    (if (= true (:done state))
-      acc
-      (recur state (conj acc (:output state))))))
-
 (defn day09a
-  ""
+  "Find answer for day09a"
   [instructions]
   (:output (opcode {:program instructions :pointer 0 :signals [1] :base 0})))
+
+(defn day09b
+  "Find answer for day09b"
+  [instructions]
+  (:output (opcode {:program instructions :pointer 0 :signals [2] :base 0})))
