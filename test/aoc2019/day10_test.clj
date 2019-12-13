@@ -14,4 +14,8 @@
   (testing "parse"
     (def expected [[1 0] [4 0] [0 2] [1 2] [2 2] [3 2] [4 2] [4 3] [3 4] [4 4]]) 
     (def actual (parse "src/aoc2019/day10/a.txt"))
+    (is (= expected actual)))
+  (testing "count visible planets"
+    (def expected 8)
+    (def actual (planet-counter [[1 0] [4 0] [0 2] [1 2] [2 2] [3 2] [4 2] [4 3] [3 4] [4 4]] [3 4] 0))
     (is (= expected actual))))

@@ -7,10 +7,10 @@
     acc
     (let [line (first lines)]
       (recur (rest lines) (inc idx)
-       (into acc
-             (map (fn [[x y]] [x idx])
-                  (filter (fn [[x y]] (= y \#))
-                          (map-indexed (fn [idx item] [idx item]) line))))))))
+             (into acc
+                   (map (fn [[x y]] [x idx])
+                        (filter (fn [[x y]] (= y \#))
+                                (map-indexed (fn [idx item] [idx item]) line))))))))
 
 (defn parse
   "parse the raw input into a tuple based coordinate system"
@@ -33,3 +33,13 @@
       (if (and (= 0 (+ a b c)) (not (= x z)) (not (= y z)))
         false
         (recur (rest galaxy) x y)))))
+
+(defn planet-counter
+  "Counts to number of visible neighbor planets in the galaxy"
+  [galaxy candidate acc]
+  (if (empty? galaxy)
+    acc
+    (let [target (first galaxy)]
+      (if (= true (los? galaxy candidate target))
+        (recur (rest galaxy) candidate (inc acc))
+        (recur (rest galaxy) candidate acc)))))
