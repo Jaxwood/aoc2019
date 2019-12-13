@@ -42,3 +42,9 @@
       (if (and (= 0 (+ a b c)) (not (= x z)) (not (= y z)) (intercepting? x y z))
         false
         (recur (rest galaxy) x y)))))
+
+(defn planet-counter
+  ""
+  [galaxy candidate]
+  (let [neighbors (filter #(not (= candidate %)) galaxy)]
+  (count (filter #(los? neighbors candidate %1) neighbors))))
