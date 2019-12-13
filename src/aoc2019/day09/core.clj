@@ -16,6 +16,14 @@
     1 val
     2 (get instruction (+ base val) 0)))
 
+(defn unsafe-lookup
+  "loop based on parameter mode"
+  [instruction mode val base]
+  (case mode
+    0 (get instruction val)
+    1 val
+    2 (get instruction (+ base val))))
+
 (defn digits
   "extract digits and append leading zeros
    1234 becomes [0 1 2 3 4]"
@@ -79,6 +87,13 @@
   (if (>= idx (count instruction))
     (update (vec (concat instruction (take (- idx (count instruction)) (repeat 0)))) idx func)
     (update instruction idx func)))
+(defn write-index
+  ""
+  [mode idx base]
+  (case mode
+    0 idx
+    1 idx
+    2 (+ base idx)))
 
 (defn opcode
   "Exectute instruction"
@@ -94,11 +109,11 @@
         thd (get instruction (+ instructionPointer 3))]
     ;; (print-instruction op c b a fst snd thd)
     (case op
-      1 (opcode {:program (safe-update instruction thd (constantly (+ (lookup instruction b snd base) (lookup instruction c fst base))))
+      1 (opcode {:program (safe-update instruction (write-index a thd base) (constantly (+ (lookup instruction b snd base) (lookup instruction c fst base))))
                  :pointer updatedPointer
                  :signals signals
                  :base base})
-      2 (opcode {:program (safe-update instruction thd (constantly (* (lookup instruction b snd base) (lookup instruction c fst base))))
+      2 (opcode {:program (safe-update instruction (write-index a thd base) (constantly (* (lookup instruction b snd base) (lookup instruction c fst base))))
                  :pointer updatedPointer
                  :signals signals
                  :base base})
@@ -109,17 +124,19 @@
            :program instruction
            :signals signals
            :base base}
-          (opcode {:program (safe-update instruction fst (constantly (first signals)))
+          (opcode {:program (safe-update instruction (write-index c fst base) (constantly (first signals)))
                    :pointer updatedPointer
                    :signals (rest signals)
                    :base base}))
-      4 (let [val (lookup instruction c fst base)]
-          {:done false
-           :pointer updatedPointer
-           :output val
-           :program instruction
-           :signals signals
-           :base base})
+      4 (let [val (unsafe-lookup instruction c fst base)]
+          (if (= 0 val)
+            (opcode {:program instruction :output val :pointer updatedPointer :signals signals :base base})
+            {:done false
+             :pointer updatedPointer
+             :output val
+             :program instruction
+             :signals signals
+             :base base}))
       5 (if (= 0 (lookup instruction c fst base))
           (opcode {:program instruction
                    :pointer updatedPointer
@@ -139,20 +156,20 @@
                    :signals signals
                    :base base}))
       7 (if (< (lookup instruction c fst base) (lookup instruction b snd base))
-          (opcode {:program (safe-update instruction thd (constantly 1))
+          (opcode {:program (safe-update instruction (write-index a thd base) (constantly 1))
                    :pointer updatedPointer
                    :signals signals
                    :base base})
-          (opcode {:program (safe-update instruction thd (constantly 0))
+          (opcode {:program (safe-update instruction (write-index a thd base) (constantly 0))
                    :pointer updatedPointer
                    :signals signals
                    :base base}))
       8 (if (= (lookup instruction c fst base) (lookup instruction b snd base))
-          (opcode {:program (safe-update instruction thd (constantly 1))
+          (opcode {:program (safe-update instruction (write-index a thd base) (constantly 1))
                    :pointer updatedPointer
                    :signals signals
                    :base base})
-          (opcode {:program (safe-update instruction thd (constantly 0))
+          (opcode {:program (safe-update instruction (write-index a thd base) (constantly 0))
                    :pointer updatedPointer
                    :signals signals
                    :base base}))
@@ -173,5 +190,5 @@
 
 (defn day09a
   ""
-  [filename]
-  0)
+  [instructions]
+  (:output (opcode {:program instructions :pointer 0 :signals [1] :base 0})))
