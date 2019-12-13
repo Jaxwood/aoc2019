@@ -43,4 +43,8 @@
   (testing "planet counter - e"
     (def expected 210)
     (def actual (planet-counter (parse "src/aoc2019/day10/e.txt") [11 13]))
+    (is (= expected actual)))
+  (testing "planet counter - e"
+    (def expected 286)
+    (def actual (day10a (parse "src/aoc2019/day10/input.txt")))
     (is (= expected actual))))

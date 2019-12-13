@@ -20,7 +20,7 @@
     (lines->galaxy lines 0 [])))
 
 (defn intercepting?
-  ""
+  "check if the planet is intercepting"
   [[x1 y1 :as x] [x2 y2 :as y] [x3 y3 :as z]]
     (let [xMax (max x1 x2)
           xMin (min x1 x2)
@@ -44,7 +44,12 @@
         (recur (rest galaxy) x y)))))
 
 (defn planet-counter
-  ""
+  "count number of visible neighbors"
   [galaxy candidate]
   (let [neighbors (filter #(not (= candidate %)) galaxy)]
   (count (filter #(los? neighbors candidate %1) neighbors))))
+
+(defn day10a
+  "find the best planet for a radar station"
+  [galaxy]
+  (apply max (map #(planet-counter galaxy %1) galaxy)))
