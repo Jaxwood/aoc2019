@@ -22,10 +22,10 @@
 (defn intercepting?
   "check if the planet is intercepting"
   [[x1 y1 :as x] [x2 y2 :as y] [x3 y3 :as z]]
-    (let [xMax (max x1 x2)
-          xMin (min x1 x2)
-          yMin (min y1 y2)
-          yMax (max y1 y2)]
+  (let [xMax (max x1 x2)
+        xMin (min x1 x2)
+        yMin (min y1 y2)
+        yMax (max y1 y2)]
     (and (<= x3 xMax) (>= x3 xMin) (<= y3 yMax) (>= y3 yMin))))
 
 (defn los?
@@ -47,7 +47,27 @@
   "count number of visible neighbors"
   [galaxy candidate]
   (let [neighbors (filter #(not (= candidate %)) galaxy)]
-  (count (filter #(los? neighbors candidate %1) neighbors))))
+    (count (filter #(los? neighbors candidate %1) neighbors))))
+
+(defn left-quadrants?
+  "check if cooridinate is in the left quadrants"
+  [x y]
+  (or
+    (and (< x 0) (= y 0))
+    (and (< x 0) (> y 0))
+    (and (< x 0) (< y 0))))
+
+(defn atan2
+  "get angle from y-axis"
+  [x y]
+  (* (Math/atan2 x y) (/ 180 Math/PI)))
+
+(defn degree-from-yAxis
+  "convert angle to degrees"
+  [[x y]]
+  (if (left-quadrants? x y)
+    (+ 360 (atan2 x y))
+    (atan2 x y)))
 
 (defn day10a
   "find the best planet for a radar station"
