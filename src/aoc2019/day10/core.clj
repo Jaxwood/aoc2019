@@ -68,6 +68,11 @@
   (if (left-quadrants? x y)
     (+ 360 (atan2 x y))
     (atan2 x y)))
+  
+(defn translate
+  "adjust the each coordinate with an offset"
+  [galaxy x y]
+  (map (fn [[x1 y1]] (conj [] (+ x x1) (+ y y1))) galaxy))
 
 (defn day10a
   "find the best planet for a radar station"

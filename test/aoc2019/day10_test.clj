@@ -79,4 +79,12 @@
   (testing "0,1 is 0 degree"
     (def expected 0.0)
     (def actual (degree-from-yAxis [0 1]))
+    (is (= expected actual)))
+  (testing "translate"
+    (def expected [[1 1] [3 2]])
+    (def actual (translate [[0 0] [2 1]] 1 1))
+    (is (= expected actual)))
+  (testing "translate"
+    (def expected [[1 -1] [3 0]])
+    (def actual (translate [[0 0] [2 1]] 1 -1))
     (is (= expected actual))))
