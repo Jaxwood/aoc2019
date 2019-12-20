@@ -81,10 +81,10 @@
     (def actual (degree-from-yAxis [0 1]))
     (is (= expected actual)))
   (testing "translate"
-    (def expected [[1 1] [3 2]])
-    (def actual (translate [[0 0] [2 1]] 1 1))
+    (def expected [[-1 1] [0 0]])
+    (def actual (translate [[1 1] [2 2]] 2 2))
     (is (= expected actual)))
-  (testing "translate"
-    (def expected [[1 -1] [3 0]])
-    (def actual (translate [[0 0] [2 1]] 1 -1))
+  (testing "day10b"
+    (def expected 802)
+    (def actual (day10b (parse "src/aoc2019/day10/e.txt") [11 13]))
     (is (= expected actual))))

@@ -53,9 +53,9 @@
   "check if cooridinate is in the left quadrants"
   [x y]
   (or
-    (and (< x 0) (= y 0))
-    (and (< x 0) (> y 0))
-    (and (< x 0) (< y 0))))
+   (and (< x 0) (= y 0))
+   (and (< x 0) (> y 0))
+   (and (< x 0) (< y 0))))
 
 (defn atan2
   "get angle from y-axis"
@@ -68,13 +68,25 @@
   (if (left-quadrants? x y)
     (+ 360 (atan2 x y))
     (atan2 x y)))
-  
+
 (defn translate
   "adjust the each coordinate with an offset"
   [galaxy x y]
-  (map (fn [[x1 y1]] (conj [] (+ x x1) (+ y y1))) galaxy))
+  (let [x' (* x -1)
+        y' (* y -1)]
+    (map (fn [[x1 y1]] (conj [] (- x1 x) (- (* -1 y1) y'))) galaxy)))
 
 (defn day10a
   "find the best planet for a radar station"
   [galaxy]
   (apply max (map #(planet-counter galaxy %1) galaxy)))
+
+(defn day10b
+  "find the 200th asteroid"
+  [galaxy [x y :as radarstation]]
+  (let [translated (translate galaxy x y)
+        asteroids (filter #(not (= [0 0] %)) translated)
+        visible (filter #(los? asteroids [0 0] %1) asteroids)
+        angles (map #(assoc {} :coord %1 :angle (degree-from-yAxis %1)) visible)
+        [x' y'] (first (drop 199 (map :coord (sort-by :angle angles))))]
+  (+ (* 100 (+ x x')) (- y y'))))
