@@ -5,7 +5,7 @@
   [filename]
   (def raw (slurp filename))
   (def firstLine (first (clojure.string/split raw #"\r\n")))
-  (def sequences (map #(Integer/parseInt %1) (clojure.string/split firstLine #",")))
+  (def sequences (map #(Long/valueOf %1) (clojure.string/split firstLine #",")))
   (into [] sequences))
 
 (defn lookup
