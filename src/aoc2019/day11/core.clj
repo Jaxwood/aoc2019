@@ -27,6 +27,13 @@
       [:east :left] {:breadcrumbs (conj breadcrumbs position) :direction :north :position [x (inc y)]}
       [:east :right] {:breadcrumbs (conj breadcrumbs position) :direction :south :position [x (dec y)]})))
 
+(defn paint
+  "toogle paint between black and white"
+  [color]
+  (match [color]
+    [:white] :black
+    [:black] :white))
+
 (defn blah
   ""
   [instructions]

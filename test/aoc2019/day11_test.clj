@@ -35,4 +35,12 @@
   (testing "facing east move right"
     (def expected {:direction :south :breadcrumbs [[0 0]] :position [0 -1]}) 
     (def actual (move {:direction :east :breadcrumbs [] :position [0 0] } :right))
+    (is (= expected actual)))
+  (testing "paint black if white"
+    (def expected :black)
+    (def actual (paint :white))
+    (is (= expected actual)))
+  (testing "paint white if black"
+    (def expected :white)
+    (def actual (paint :black))
     (is (= expected actual))))
