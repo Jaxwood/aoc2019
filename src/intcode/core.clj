@@ -20,6 +20,14 @@
     (let [digit (mod candidate 10)]
       (recur (int (/ candidate 10)) (cons digit acc)))))
 
+(defn parameter-mode
+  "Based on the parameter mode for the specific parameter it will
+   return the address to read from"
+  [memory address mode]
+  (case mode
+    0 (get memory (get memory address))
+    1 (get memory address)))
+
 (defn readInstruction
   "Read the next instruction"
   [memory address]
@@ -28,13 +36,13 @@
     (case opcode
       1 {:opcode opcode
          :parameters (conj []
-                           (get memory (+ address 1))
-                           (get memory (+ address 2))
+                           (parameter-mode memory (+ address 1) pm1)
+                           (parameter-mode memory (+ address 2) pm2)
                            (get memory (+ address 3)))}
       2 {:opcode opcode
          :parameters (conj []
-                           (get memory (+ address 1))
-                           (get memory (+ address 2))
+                           (parameter-mode memory (+ address 1) pm1)
+                           (parameter-mode memory (+ address 2) pm2)
                            (get memory (+ address 3)))}
       99 {:opcode opcode
           :parameters []})))
@@ -45,7 +53,7 @@
   [memory instruction]
   (let [[a b c] (:parameters instruction)]
     (update memory c
-            (constantly (+ (get memory a) (get memory b))))))
+            (constantly (+ a b)))))
 
 (defn multiply
   "multiplies two positions and stores in the third position
@@ -53,7 +61,7 @@
   [memory instruction]
   (let [[a b c] (:parameters instruction)]
     (update memory c
-            (constantly (* (get memory a) (get memory b))))))
+            (constantly (* a b)))))
 
 (defn run
   "Run the program"
