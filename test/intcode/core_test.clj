@@ -7,6 +7,10 @@
     (def expected [1 9 10 3 2 3 11 0 99 30 40 50])
     (def actual (parse "test/intcode/parse.txt"))
     (is (= expected actual)))
+  (testing "digits"
+    (def expected [0 1 2 3 4])
+    (def actual (digits 1234 []))
+    (is (= expected actual)))
   (testing "add"
     (def memory [1 9 10 3 2 3 11 0 99 30 40 50])
     (def expected [1 9 10 70 2 3 11 0 99 30 40 50])

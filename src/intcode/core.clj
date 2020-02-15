@@ -9,28 +9,51 @@
   (def sequences (map #(Long/valueOf %1) (clojure.string/split firstLine #",")))
   (into [] sequences))
 
+(defn digits
+  "extract digits and append leading zeros
+   1234 becomes [0 1 2 3 4]"
+  [candidate acc]
+  (if (= candidate 0)
+    (if (= (count acc) 5)
+      acc
+      (into (vec (take (- 5 (count acc)) (repeat 0))) acc))
+    (let [digit (mod candidate 10)]
+      (recur (int (/ candidate 10)) (cons digit acc)))))
+
 (defn readInstruction
   "Read the next instruction"
   [memory address]
-  (let [opcode (get memory address)]
+  (let [[pm3 pm2 pm1 tens ones] (digits (get memory address) [])
+        opcode (+ ones (* 10 tens))]
     (case opcode
-      1 {:opcode opcode :parameters (conj [] (get memory (+ address 1)) (get memory (+ address 2)) (get memory (+ address 3)))}
-      2 {:opcode opcode :parameters (conj [] (get memory (+ address 1)) (get memory (+ address 2)) (get memory (+ address 3)))}
-      99 {:opcode opcode :parameters []})))
+      1 {:opcode opcode
+         :parameters (conj []
+                           (get memory (+ address 1))
+                           (get memory (+ address 2))
+                           (get memory (+ address 3)))}
+      2 {:opcode opcode
+         :parameters (conj []
+                           (get memory (+ address 1))
+                           (get memory (+ address 2))
+                           (get memory (+ address 3)))}
+      99 {:opcode opcode
+          :parameters []})))
 
 (defn add
   "adds two positions and stores in the third position
    returns the updated memory"
   [memory instruction]
   (let [[a b c] (:parameters instruction)]
-    (update memory c (constantly (+ (get memory a) (get memory b))))))
+    (update memory c
+            (constantly (+ (get memory a) (get memory b))))))
 
 (defn multiply
   "multiplies two positions and stores in the third position
    returns the updated memory"
   [memory instruction]
   (let [[a b c] (:parameters instruction)]
-    (update memory c (constantly (* (get memory a) (get memory b))))))
+    (update memory c
+            (constantly (* (get memory a) (get memory b))))))
 
 (defn run
   "Run the program"
