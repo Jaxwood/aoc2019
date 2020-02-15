@@ -28,7 +28,7 @@
     0 (get memory (get memory address))
     1 (get memory address)))
 
-(defn readInstruction
+(defn read-instruction
   "Read the next instruction"
   [memory address]
   (let [[pm3 pm2 pm1 tens ones] (digits (get memory address) [])
@@ -66,7 +66,7 @@
 (defn run
   "Run the program"
   [memory address]
-  (let [instruction (readInstruction memory address)]
+  (let [instruction (read-instruction memory address)]
     (case (:opcode instruction)
       1 (recur (add memory instruction) (+ address 4))
       2 (recur (multiply memory instruction) (+ address 4))
