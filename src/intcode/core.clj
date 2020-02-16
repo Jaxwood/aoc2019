@@ -50,6 +50,24 @@
       4 {:opcode opcode
          :parameters (conj []
                            (parameter-mode memory (+ address 1) pm1))}
+      5 {:opcode opcode
+         :parameters (conj []
+                           (parameter-mode memory (+ address 1) pm1)
+                           (parameter-mode memory (+ address 2) pm2))}
+      6 {:opcode opcode
+         :parameters (conj []
+                           (parameter-mode memory (+ address 1) pm1)
+                           (parameter-mode memory (+ address 2) pm2))}
+      7 {:opcode opcode
+         :parameters (conj []
+                           (parameter-mode memory (+ address 1) pm1)
+                           (parameter-mode memory (+ address 2) pm2)
+                           (get memory (+ address 3)))}
+      8 {:opcode opcode
+         :parameters (conj []
+                           (parameter-mode memory (+ address 1) pm1)
+                           (parameter-mode memory (+ address 2) pm2)
+                           (get memory (+ address 3)))}
       99 {:opcode opcode
           :parameters []})))
 
@@ -83,6 +101,42 @@
   (let [[a] (:parameters instruction)]
     a))
 
+(defn jump-if-true
+  "if the first parameter is non-zero, it sets the instruction pointer
+   to the value from the second parameter. Otherwise, it does nothing"
+  [instruction address]
+  (let [[a b] (:parameters instruction)]
+    (if (= 0 a)
+      (+ address 3)
+      b)))
+
+(defn jump-if-false
+  "if the first parameter is zero, it sets the instruction pointer to the
+   value from the second parameter. Otherwise, it does nothing"
+  [instruction address]
+  (let [[a b] (:parameters instruction)]
+    (if (= 0 a)
+      b
+      (+ address 3))))
+
+(defn less-than
+  "if the first parameter is less than the second parameter, it stores 1 in
+   the position given by the third parameter. Otherwise, it stores 0"
+  [memory instruction]
+  (let [[a b c] (:parameters instruction)]
+    (if (< a b)
+      (update memory c (constantly 1))
+      (update memory c (constantly 0)))))
+
+(defn equals
+  "if the first parameter is equal to the second parameter, it stores 1 in
+   the position given by the third parameter. Otherwise, it stores 0"
+  [memory instruction]
+  (let [[a b c] (:parameters instruction)]
+    (if (= a b)
+      (update memory c (constantly 1))
+      (update memory c (constantly 0)))))
+
 (defn run
   "Run the program"
   [memory address input]
@@ -95,4 +149,8 @@
           (if (= 0 output)
             (recur memory (+ address 2) input)
             output))
+      5 (recur memory (jump-if-true instruction address) input)
+      6 (recur memory (jump-if-false instruction address)  input)
+      7 (recur (less-than memory instruction) (+ address 4) input)
+      8 (recur (equals memory instruction) (+ address 4) input)
       99 memory)))

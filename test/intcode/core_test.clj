@@ -35,7 +35,11 @@
     (def expected 3500)
     (def actual (run [1 9 10 3 2 3 11 0 99 30 40 50] 0 0))
     (is (= expected (first actual))))
-  (testing "day05"
+  (testing "day05a"
     (def expected 4511442)
     (def actual (run (parse "src/aoc2019/day05/input.txt") 0 1))
+    (is (= expected actual)))
+  (testing "day05b"
+    (def expected 12648139)
+    (def actual (run (parse "src/aoc2019/day05/input.txt") 0 5))
     (is (= expected actual))))
