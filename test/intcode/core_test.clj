@@ -42,4 +42,12 @@
   (testing "day05b"
     (def expected 12648139)
     (def actual (run (parse "src/aoc2019/day05/input.txt") 0 0 5))
+    (is (= expected actual)))
+  (testing "day09a"
+    (def expected 3345854957)
+    (def actual (run (parse "src/aoc2019/day09/input.txt") 0 0 1))
+    (is (= expected actual)))
+  (testing "day09b"
+    (def expected 68938)
+    (def actual (run (parse "src/aoc2019/day09/input.txt") 0 0 2))
     (is (= expected actual))))

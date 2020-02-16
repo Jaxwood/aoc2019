@@ -41,7 +41,7 @@
   (case mode
     0 (get memory address)
     1 (get memory address)
-    2 (get memory (+ address relative))))
+    2 (+ relative (get memory address))))
 
 (defn read-instruction
   "Read the next instruction"
@@ -61,7 +61,7 @@
                            (write-index memory (+ address 3) relative pm3))}
       3 {:opcode opcode
          :parameters (conj []
-                           (write-index memory (+ address 1) relative pm3))}
+                           (write-index memory (+ address 1) relative pm1))}
       4 {:opcode opcode
          :parameters (conj []
                            (read-value memory (+ address 1) relative pm1))}
@@ -83,6 +83,9 @@
                            (read-value memory (+ address 1) relative pm1)
                            (read-value memory (+ address 2) relative pm2)
                            (write-index memory (+ address 3) relative pm3))}
+      9 {:opcode opcode
+         :parameters (conj []
+                           (read-value memory (+ address 1) relative pm1))}
       99 {:opcode opcode
           :parameters []})))
 
@@ -152,6 +155,12 @@
       (safe-update memory c (constantly 1))
       (safe-update memory c (constantly 0)))))
 
+(defn adjust-relative
+  "adjust the relative parameter"
+  [instruction relative]
+  (let [[a] (:parameters instruction)]
+    (+ relative a)))
+
 (defn run
   "Run the program"
   [memory address relative input]
@@ -168,4 +177,5 @@
       6 (recur memory (jump-if-false instruction address) relative input)
       7 (recur (less-than memory instruction) (+ address 4) relative input)
       8 (recur (equals memory instruction) (+ address 4) relative input)
+      9 (recur memory (+ address 2) (adjust-relative instruction relative) input)
       99 memory)))
