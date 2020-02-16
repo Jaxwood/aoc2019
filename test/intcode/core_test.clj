@@ -35,10 +35,6 @@
     (def expected 3500)
     (def actual (run {:memory [1 9 10 3 2 3 11 0 99 30 40 50] :address 0 :relative 0 :input 0}))
     (is (= expected (first (:memory actual)))))
-  (testing "day05a"
-    (def expected 4511442)
-    (def actual (run {:memory (parse "src/aoc2019/day05/input.txt") :address 0 :relative 0 :input 1}))
-    (is (= expected (:output actual))))
   (testing "day05b"
     (def expected 12648139)
     (def actual (run {:memory (parse "src/aoc2019/day05/input.txt") :address 0 :relative 0 :input 5}))

@@ -163,20 +163,13 @@
 
 (defn run
   "Run the program"
-  [program]
-  (let [memory (:memory program)
-        address (:address program)
-        relative (:relative program)
-        input (:input program)
-        instruction (read-instruction memory address relative)]
+  [{:keys [memory address relative input]}]
+  (let [instruction (read-instruction memory address relative)]
     (case (:opcode instruction)
       1 (recur {:memory (add memory instruction) :address (+ address 4) :relative relative :input input})
       2 (recur {:memory (multiply memory instruction) :address (+ address 4) :relative relative :input input})
       3 (recur {:memory (in memory instruction input) :address (+ address 2) :relative relative :input input})
-      4 (let [output (out memory instruction)]
-          (if (= 0 output)
-            (recur {:memory memory :address (+ address 2) :relative relative :input input})
-            {:memory memory :address address :relative relative :input input :output output}))
+      4 {:memory memory :address (+ address 2) :relative relative :input input :output (out memory instruction)}
       5 (recur {:memory memory :address (jump-if-true instruction address) :relative relative :input input})
       6 (recur {:memory memory :address (jump-if-false instruction address) :relative relative :input input})
       7 (recur {:memory (less-than memory instruction) :address (+ address 4) :relative relative :input input})
