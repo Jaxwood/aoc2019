@@ -21,7 +21,21 @@
     (def expected [3500 9 10 70 2 3 11 0 99 30 40 50])
     (def actual (multiply memory (read-instruction memory 4)))
     (is (= expected actual)))
+  (testing "input"
+    (def memory [3,0,4,0,99])
+    (def expected [1,0,4,0,99])
+    (def actual (in memory (read-instruction memory 0) 1))
+    (is (= expected actual)))
+  (testing "output"
+    (def memory [3,0,4,0,99])
+    (def expected 3)
+    (def actual (out memory (read-instruction memory 2)))
+    (is (= expected actual)))
   (testing "run"
     (def expected 3500)
-    (def actual (run [1 9 10 3 2 3 11 0 99 30 40 50] 0))
-    (is (= expected (first actual)))))
+    (def actual (run [1 9 10 3 2 3 11 0 99 30 40 50] 0 0))
+    (is (= expected (first actual))))
+  (testing "day05"
+    (def expected 4511442)
+    (def actual (run (parse "src/aoc2019/day05/input.txt") 0 1))
+    (is (= expected actual))))

@@ -44,6 +44,12 @@
                            (parameter-mode memory (+ address 1) pm1)
                            (parameter-mode memory (+ address 2) pm2)
                            (get memory (+ address 3)))}
+      3 {:opcode opcode
+         :parameters (conj []
+                           (get memory (+ address 1)))}
+      4 {:opcode opcode
+         :parameters (conj []
+                           (parameter-mode memory (+ address 1) pm1))}
       99 {:opcode opcode
           :parameters []})))
 
@@ -63,11 +69,30 @@
     (update memory c
             (constantly (* a b)))))
 
+(defn in
+  "takes a single integer as input and saves it to the position
+  given by its only parameter. Returns the updated memory"
+  [memory instruction input]
+  (let [[a] (:parameters instruction)]
+    (update memory a
+            (constantly input))))
+
+(defn out
+  "outputs the value of its only parameter."
+  [memory instruction]
+  (let [[a] (:parameters instruction)]
+    a))
+
 (defn run
   "Run the program"
-  [memory address]
+  [memory address input]
   (let [instruction (read-instruction memory address)]
     (case (:opcode instruction)
-      1 (recur (add memory instruction) (+ address 4))
-      2 (recur (multiply memory instruction) (+ address 4))
+      1 (recur (add memory instruction) (+ address 4) input)
+      2 (recur (multiply memory instruction) (+ address 4) input)
+      3 (recur (in memory instruction input) (+ address 2) input)
+      4 (let [output (out memory instruction)]
+          (if (= 0 output)
+            (recur memory (+ address 2) input)
+            output))
       99 memory)))
