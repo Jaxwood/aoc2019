@@ -176,7 +176,7 @@
       4 (let [output (out memory instruction)]
           (if (= 0 output)
             (recur {:memory memory :address (+ address 2) :relative relative :input input})
-            output))
+            {:memory memory :address address :relative relative :input input :output output}))
       5 (recur {:memory memory :address (jump-if-true instruction address) :relative relative :input input})
       6 (recur {:memory memory :address (jump-if-false instruction address) :relative relative :input input})
       7 (recur {:memory (less-than memory instruction) :address (+ address 4) :relative relative :input input})

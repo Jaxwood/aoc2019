@@ -38,16 +38,16 @@
   (testing "day05a"
     (def expected 4511442)
     (def actual (run {:memory (parse "src/aoc2019/day05/input.txt") :address 0 :relative 0 :input 1}))
-    (is (= expected actual)))
+    (is (= expected (:output actual))))
   (testing "day05b"
     (def expected 12648139)
     (def actual (run {:memory (parse "src/aoc2019/day05/input.txt") :address 0 :relative 0 :input 5}))
-    (is (= expected actual)))
+    (is (= expected (:output actual))))
   (testing "day09a"
     (def expected 3345854957)
     (def actual (run {:memory (parse "src/aoc2019/day09/input.txt") :address 0 :relative 0 :input 1}))
-    (is (= expected actual)))
+    (is (= expected (:output actual))))
   (testing "day09b"
     (def expected 68938)
     (def actual (run {:memory (parse "src/aoc2019/day09/input.txt") :address 0 :relative 0 :input 2}))
-    (is (= expected actual))))
+    (is (= expected (:output actual)))))
