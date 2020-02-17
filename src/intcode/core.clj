@@ -111,7 +111,7 @@
   [memory instruction input]
   (let [[a] (:parameters instruction)]
     (safe-update memory a
-                 (constantly input))))
+                 (constantly (first input)))))
 
 (defn out
   "outputs the value of its only parameter."
@@ -166,13 +166,15 @@
   [{:keys [memory address relative input]}]
   (let [instruction (read-instruction memory address relative)]
     (case (:opcode instruction)
-      1 (recur {:memory (add memory instruction) :address (+ address 4) :relative relative :input input})
-      2 (recur {:memory (multiply memory instruction) :address (+ address 4) :relative relative :input input})
-      3 (recur {:memory (in memory instruction input) :address (+ address 2) :relative relative :input input})
-      4 {:memory memory :address (+ address 2) :relative relative :input input :output (out memory instruction)}
-      5 (recur {:memory memory :address (jump-if-true instruction address) :relative relative :input input})
-      6 (recur {:memory memory :address (jump-if-false instruction address) :relative relative :input input})
-      7 (recur {:memory (less-than memory instruction) :address (+ address 4) :relative relative :input input})
-      8 (recur {:memory (equals memory instruction) :address (+ address 4) :relative relative :input input})
-      9 (recur {:memory memory :address (+ address 2) :relative (adjust-relative instruction relative) :input input})
-      99 {:memory memory :address address :relative relative :input input})))
+      1 (recur {:memory (add memory instruction) :address (+ address 4) :relative relative :input input :status :running})
+      2 (recur {:memory (multiply memory instruction) :address (+ address 4) :relative relative :input input :status :running})
+      3 (if (empty? input)
+          {:memory memory :address address :relative relative :input input :status :interruptible}
+          (recur {:memory (in memory instruction input) :address (+ address 2) :relative relative :input (vec (rest input)) :status :running}))
+      4 {:memory memory :address (+ address 2) :relative relative :input input :output (out memory instruction) :status :uninterruptible}
+      5 (recur {:memory memory :address (jump-if-true instruction address) :relative relative :input input :status :running})
+      6 (recur {:memory memory :address (jump-if-false instruction address) :relative relative :input input :status :running})
+      7 (recur {:memory (less-than memory instruction) :address (+ address 4) :relative relative :input input :status :running})
+      8 (recur {:memory (equals memory instruction) :address (+ address 4) :relative relative :input input :status :running})
+      9 (recur {:memory memory :address (+ address 2) :relative (adjust-relative instruction relative) :input input :status :running})
+      99 {:memory memory :address address :relative relative :input input :status :stopped})))
