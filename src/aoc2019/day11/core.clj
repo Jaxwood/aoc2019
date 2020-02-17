@@ -1,47 +1,61 @@
 (ns aoc2019.day11.core
-  (:require [aoc2019.day09.core :refer [opcode]]
+  (:require [intcode.core :refer [run]]
             [clojure.core.match :refer [match]]))
+;; state
+;; :position [x y (:black|:white)]
+;; :direction (:up|:down|:left|:right)
+;; :breadcrumbs [[x y (:black|:white)]]
 
-;;  :program []
-;;  :pointer 0
-;;  :signals []
-;;  :base 0
+(defn int->color
+  "convert an integer to a color"
+  [raw]
+  (case raw
+    0 :black
+    1 :white))
 
-(def initial {:position [0 0]
-              :direction :north
-              :breadcrumbs []})
+(defn color->int
+  "convert an color to an integer"
+  [raw]
+  (case raw
+    :black 0
+    :white 1))
 
-(defn paint
-  "toogle paint between black and white"
-  [color]
-  (match [color]
-    [:white] :black
-    [:black] :white))
+(defn int->direction
+  "convert an integer to a direction"
+  [raw]
+  (case raw
+    0 :left
+    1 :right))
+
+(defn set-input
+  "sets the input of the program"
+  [color {:keys [memory address relative input output]}]
+  {:memory memory :address address :relative relative :input (color->int color) :output output})
+
+(defn find-color
+  "finds the color"
+  [x y breadcrumbs]
+  (let [existing (filter #(and (= (first %1) x) (= (second %1) y)) breadcrumbs)]
+    (if (empty? existing)
+      :black
+      ((comp last last) existing))))
 
 (defn move
-  "Takes a state and a direction (:left or :right) and calculates next state"
-  [state next]
-  (let [direction (:direction state)
-        [x y color :as position] (:position state)
-        breadcrumbs (:breadcrumbs state)]
-    (match [direction next]
-      [:north :left] {:breadcrumbs (conj breadcrumbs position) :direction :west :position [(dec x) y (paint color)]}
-      [:north :right] {:breadcrumbs (conj breadcrumbs position) :direction :east :position [(inc x) y (paint color)]}
-      [:south :left] {:breadcrumbs (conj breadcrumbs position) :direction :east :position [(inc x) y (paint color)]}
-      [:south :right] {:breadcrumbs (conj breadcrumbs position) :direction :west :position [(dec x) y (paint color)]}
-      [:west :left] {:breadcrumbs (conj breadcrumbs position) :direction :south :position [x (dec y) (paint color)]}
-      [:west :right] {:breadcrumbs (conj breadcrumbs position) :direction :north :position [x (inc y) (paint color)]}
-      [:east :left] {:breadcrumbs (conj breadcrumbs position) :direction :north :position [x (inc y) (paint color)]}
-      [:east :right] {:breadcrumbs (conj breadcrumbs position) :direction :south :position [x (dec y) (paint color)]})))
-
-(defn blah
-  ""
-  [instructions]
-  (let [a (opcode {:program instructions :pointer 0 :signals [0] :base 0})
-        b (opcode {:program (:program a) :pointer (:pointer a) :signals [(:output a)] :base (:base a)})]
-    [(:output a) (:output b)]))
+  "moves the hull painting robot"
+  [{[x y color] :position direction :direction breadcrumbs :breadcrumbs, :as state} turn new-color]
+  (match [direction turn]
+    [:north :left]  {:position [(dec x) y (find-color (dec x) y breadcrumbs)] :direction :west :breadcrumbs  (conj breadcrumbs [x y new-color])}
+    [:north :right] {:position [(inc x) y (find-color (inc x) y breadcrumbs)] :direction :east :breadcrumbs  (conj breadcrumbs [x y new-color])}
+    [:south :left]  {:position [(inc x) y (find-color (inc x) y breadcrumbs)] :direction :east :breadcrumbs  (conj breadcrumbs [x y new-color])}
+    [:south :right] {:position [(dec x) y (find-color (dec x) y breadcrumbs)] :direction :west :breadcrumbs  (conj breadcrumbs [x y new-color])}
+    [:west :left]   {:position [x (dec y) (find-color x (dec y) breadcrumbs)] :direction :south :breadcrumbs (conj breadcrumbs [x y new-color])}
+    [:west :right]  {:position [x (inc y) (find-color x (inc y) breadcrumbs)] :direction :north :breadcrumbs (conj breadcrumbs [x y new-color])}
+    [:east :left]   {:position [x (inc y) (find-color x (inc y) breadcrumbs)] :direction :north :breadcrumbs (conj breadcrumbs [x y new-color])}
+    [:east :right]  {:position [x (dec y) (find-color x (dec y) breadcrumbs)] :direction :south :breadcrumbs (conj breadcrumbs [x y new-color])}))
 
 (defn day11a
-  ""
-  []
-  0)
+  "panels painted atleast once"
+  [{[x y color] :position direction :direction breadcrumbs :breadcrumbs, :as state} program]
+  (let [hull-color (run (set-input color program))
+        robot-direction (run (set-input (int->color (:output hull-color)) hull-color))]
+    (recur (move state (int->direction (:output robot-direction)) (int->color (:output hull-color))) robot-direction)))
