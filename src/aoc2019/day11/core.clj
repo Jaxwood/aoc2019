@@ -29,7 +29,6 @@
 (defn day11a
   "panels painted atleast once"
   [{[x y color] :position direction :direction breadcrumbs :breadcrumbs, :as state} program]
-  (println (:address program))
   (let [hull-color (run (assoc program :input [color]))
         robot-direction (run (assoc hull-color :input []))]
       (if (= :stopped (:status robot-direction))

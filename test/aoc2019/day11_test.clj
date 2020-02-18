@@ -25,8 +25,14 @@
     (def actual (move {:position [0 0 white] :direction :north :breadcrumbs {}} 0 1))
     (is (= expected actual)))
   (testing "day11a"
-    (def expected 0)
+    (def expected 2339)
     (def actual (day11a
                  {:position [0 0 black] :direction :north :breadcrumbs {}}
+                 {:memory (parse "src/aoc2019/day11/input.txt") :address 0 :relative 0 :input []}))
+    (is (= expected actual)))
+  (testing "day11b"
+    (def expected 249)
+    (def actual (day11a
+                 {:position [0 0 white] :direction :north :breadcrumbs {}}
                  {:memory (parse "src/aoc2019/day11/input.txt") :address 0 :relative 0 :input []}))
     (is (= expected actual))))
