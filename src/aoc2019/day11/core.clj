@@ -15,22 +15,23 @@
 
 (defn move
   "moves the hull painting robot"
-  [{[x y color] :position direction :direction breadcrumbs :breadcrumbs, :as state} turn new-color]
-  (match [direction turn]
-    [:north left]  {:position [(dec x) y (find-color (dec x) y breadcrumbs)] :direction :west  :breadcrumbs (assoc breadcrumbs [x y] new-color)}
-    [:north right] {:position [(inc x) y (find-color (inc x) y breadcrumbs)] :direction :east  :breadcrumbs (assoc breadcrumbs [x y] new-color)}
-    [:south left]  {:position [(inc x) y (find-color (inc x) y breadcrumbs)] :direction :east  :breadcrumbs (assoc breadcrumbs [x y] new-color)}
-    [:south right] {:position [(dec x) y (find-color (dec x) y breadcrumbs)] :direction :west  :breadcrumbs (assoc breadcrumbs [x y] new-color)}
-    [:west left]   {:position [x (dec y) (find-color x (dec y) breadcrumbs)] :direction :south :breadcrumbs (assoc breadcrumbs [x y] new-color)}
-    [:west right]  {:position [x (inc y) (find-color x (inc y) breadcrumbs)] :direction :north :breadcrumbs (assoc breadcrumbs [x y] new-color)}
-    [:east left]   {:position [x (inc y) (find-color x (inc y) breadcrumbs)] :direction :north :breadcrumbs (assoc breadcrumbs [x y] new-color)}
-    [:east right]  {:position [x (dec y) (find-color x (dec y) breadcrumbs)] :direction :south :breadcrumbs (assoc breadcrumbs [x y] new-color)}))
+  [{[x y color] :position direction :direction breadcrumbs :breadcrumbs, :as state} new-color new-direction]
+  (match [direction new-direction]
+    [:north 0] {:position [(dec x) y (find-color (dec x) y breadcrumbs)] :direction :west  :breadcrumbs (assoc breadcrumbs [x y] new-color)}
+    [:north 1] {:position [(inc x) y (find-color (inc x) y breadcrumbs)] :direction :east  :breadcrumbs (assoc breadcrumbs [x y] new-color)}
+    [:south 0] {:position [(inc x) y (find-color (inc x) y breadcrumbs)] :direction :east  :breadcrumbs (assoc breadcrumbs [x y] new-color)}
+    [:south 1] {:position [(dec x) y (find-color (dec x) y breadcrumbs)] :direction :west  :breadcrumbs (assoc breadcrumbs [x y] new-color)}
+    [:west 0] {:position [x (dec y) (find-color x (dec y) breadcrumbs)] :direction :south :breadcrumbs (assoc breadcrumbs [x y] new-color)}
+    [:west 1] {:position [x (inc y) (find-color x (inc y) breadcrumbs)] :direction :north :breadcrumbs (assoc breadcrumbs [x y] new-color)}
+    [:east 0] {:position [x (inc y) (find-color x (inc y) breadcrumbs)] :direction :north :breadcrumbs (assoc breadcrumbs [x y] new-color)}
+    [:east 1] {:position [x (dec y) (find-color x (dec y) breadcrumbs)] :direction :south :breadcrumbs (assoc breadcrumbs [x y] new-color)}))
 
 (defn day11a
   "panels painted atleast once"
   [{[x y color] :position direction :direction breadcrumbs :breadcrumbs, :as state} program]
+  (println (:address program))
   (let [hull-color (run (assoc program :input [color]))
         robot-direction (run (assoc hull-color :input []))]
       (if (= :stopped (:status robot-direction))
         (count (into #{} (:breadcrumbs state)))
-        (recur (move state (:output robot-direction) (:output hull-color)) robot-direction))))
+        (recur (move state (:output hull-color) (:output robot-direction)) robot-direction))))
