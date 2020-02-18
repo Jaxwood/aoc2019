@@ -32,7 +32,7 @@
     (is (= expected actual)))
   (testing "day11b"
     (def expected 249)
-    (def actual (day11a
+    (def actual (day11b
                  {:position [0 0 white] :direction :north :breadcrumbs {}}
                  {:memory (parse "src/aoc2019/day11/input.txt") :address 0 :relative 0 :input []}))
     (is (= expected actual))))
