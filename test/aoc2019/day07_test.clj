@@ -1,5 +1,6 @@
 (ns aoc2019.day07-test
   (:require [clojure.test :refer :all]
+            [intcode.core :refer [parse]]
             [aoc2019.day07.core :refer :all]
             [clojure.math.combinatorics :as combo]))
 
