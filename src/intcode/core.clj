@@ -31,9 +31,9 @@
   "read the value from the address based on the mode"
   [memory address relative mode]
   (case mode
-    0 (get memory (get memory address))
-    1 (get memory address)
-    2 (get memory (+ relative (get memory address)))))
+    0 (get memory (get memory address 0) 0)
+    1 (get memory address 0)
+    2 (get memory (+ relative (get memory address 0)) 0)))
 
 (defn write-index
   "finds the index to write to"
