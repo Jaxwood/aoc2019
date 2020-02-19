@@ -1,9 +1,33 @@
 (ns aoc2019.day12.core)
 
+(defn modifier
+  "calculates the velocity modifier"
+  [a b]
+  (cond
+    (> a b) -1
+    (< a b) 1
+    (= a b) 0))
+
+(defn gravity
+  "calculate gravity"
+  [[io europe ganymede calisto]]
+  [(apply + (map (partial modifier io) [europe ganymede calisto]))
+   (apply + (map (partial modifier europe) [io ganymede calisto]))
+   (apply + (map (partial modifier ganymede) [europe io calisto]))
+   (apply + (map (partial modifier calisto) [europe ganymede io]))])
+
+(defn adjust-velocity
+  "apply the velocity"
+  [[x y z] [vx vy vz]]
+  [(+ x vx) (+ y vy) (+ z vz)])
+
 (defn tick
   "simulate motion of the moons"
-  [moons velocity]
-  [moons velocity])
+  [[a b c d] velocity]
+  (let [[x y z] (map (comp gravity vector) a b c d)
+        new-velocity (map adjust-velocity (map vector x y z) velocity)
+        new-moons (map adjust-velocity [a b c d] new-velocity)]
+    [new-moons new-velocity]))
 
 (defn abs
   "get the absolute value"
