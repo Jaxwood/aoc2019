@@ -48,3 +48,15 @@
     (calculate moons velocity)
     (let [[a b] (tick moons velocity)]
       (recur a b (dec steps)))))
+
+(defn day12b
+  "find the steps needed for a repeat"
+  [moons velocity memory steps]
+  (let [[a b] (tick moons velocity)
+        mem (get memory a)]
+    (if (nil? mem)
+      (recur a b (assoc memory a (conj #{} b)) (inc steps))
+      (do
+        (if (contains? mem b)
+          steps
+          (recur a b (assoc memory a (conj mem b)) (inc steps)))))))

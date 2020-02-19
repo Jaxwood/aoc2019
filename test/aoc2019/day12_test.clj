@@ -22,4 +22,8 @@
   (testing "day12a"
     (def expected 9958)
     (def actual (day12a [[7 10 17] [-2 7 0] [12 5 12] [5 -8 6]] [[0 0 0] [0 0 0] [0 0 0] [0 0 0]] 1000))
+    (is (= expected actual)))
+  (testing "repeats"
+    (def expected 2772)
+    (def actual (day12b [[-1 0 2] [2 -10 -7] [4 -8 8] [3 5 -1]] [[0 0 0] [0 0 0] [0 0 0] [0 0 0]] {} 0))
     (is (= expected actual))))
