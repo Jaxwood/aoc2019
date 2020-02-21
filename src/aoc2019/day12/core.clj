@@ -32,14 +32,45 @@
 (defn abs
   "get the absolute value"
   [value]
-  (map #(Math/abs %1) value))
+  (Math/abs value))
+
+(defn mabs
+  "get the absolute value"
+  [value]
+  (map #(abs %1) value))
 
 (defn calculate
   "calculate the energy"
   [moons velocity]
   (apply + (map *
-                (map #(apply + %1) (map abs moons))
-                (map #(apply + %1) (map abs velocity)))))
+                (map #(apply + %1) (map mabs moons))
+                (map #(apply + %1) (map mabs velocity)))))
+
+(defn gcd [a b]
+  "greatest common divisor"
+  (if (zero? b)
+    a
+    (recur b (mod a b))))
+
+(defn lcm [a b]
+  "least common multiple"
+  (/ (* a b) (gcd a b)))
+
+(defn find-repeating-step
+  "find the steps required for a repeat"
+  [[x1 x2 x3 x4 v1 v2 v3 v4]
+   steps
+   memory]
+  (let [xc1 (+ (modifier x1 x2) (modifier x1 x3) (modifier x1 x4))
+        xc2 (+ (modifier x2 x1) (modifier x2 x3) (modifier x2 x4))
+        xc3 (+ (modifier x3 x1) (modifier x3 x2) (modifier x3 x4))
+        xc4 (+ (modifier x4 x1) (modifier x4 x2) (modifier x4 x3))
+        key [(+ x1 xc1 v1) (+ x2 xc2 v2) (+ x3 xc3 v3) (+ x4 xc4 v4) (+ v1 xc1) (+ v2 xc2) (+ v3 xc3) (+ v4 xc4)]]
+    (if (contains? memory key)
+      (if (= (get memory key) 0)
+        steps
+        (recur key (inc steps) (assoc memory key (inc (get memory key)))))
+      (recur key (inc steps) (assoc memory key 0)))))
 
 (defn day12a
   "find the energy after steps"
@@ -50,13 +81,9 @@
       (recur a b (dec steps)))))
 
 (defn day12b
-  "find the steps needed for a repeat"
-  [moons velocity memory steps]
-  (let [[a b] (tick moons velocity)
-        mem (get memory a)]
-    (if (nil? mem)
-      (recur a b (assoc memory a (conj #{} b)) (inc steps))
-      (do
-        (if (contains? mem b)
-          steps
-          (recur a b (assoc memory a (conj mem b)) (inc steps)))))))
+  "find the steps for a repeat"
+  [[x y z]]
+  (let [x-repeat (find-repeating-step (concat x [0 0 0 0]) 0 {})
+        y-repeat (find-repeating-step (concat y [0 0 0 0]) 0 {})
+        z-repeat (find-repeating-step (concat z [0 0 0 0]) 0 {})]
+    (lcm (lcm x-repeat y-repeat) z-repeat)))
