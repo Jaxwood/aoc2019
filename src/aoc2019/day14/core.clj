@@ -2,49 +2,46 @@
 
 (defn string->reaction
   "parse a string into a series of reactions"
-  [raw]
-  (let [[left right] (clojure.string/split raw #" => ")
-        commas (clojure.string/split left #", ")
-        keypairs (map (fn [x] (clojure.string/split x #"\s")) commas)
-        in-result (map (fn [[k v]] [(Integer/parseInt k) v]) keypairs)
-        [i o] (clojure.string/split right #"\s")]
-    {:in (vec in-result)
-     :out [(Integer/parseInt i) o]}))
+  [acc raw]
+  (let [matches (re-seq #"(\d+) (\w+)" raw)
+        [_ amount type] (last matches)
+        requires (map (fn [[_ a t]] [(Integer/parseInt a) (keyword t)]) (drop-last matches))]
+    (assoc acc (keyword type) {:amount (Integer/parseInt amount) :requires requires})))
 
 (defn parse
   "parse file input into reactions"
   [filename]
   (let [raw (slurp filename)
         lines (clojure.string/split raw #"\r\n")]
-    (vec (map string->reaction lines))))
+    (reduce (fn [acc n] (string->reaction acc n)) {} lines)))
 
-(defn has?
-  "filter based on a type"
-  [type {:keys [in out]}]
-  (let [[k v] out]
-    (= v type)))
+(defn reciepe
+  "finds the ingredients for 1 fuel"
+  [reactions acc requirements]
+  (if (empty? requirements)
+    acc
+    (let [so-far (reduce (fn [acc [v k]] (update acc k (fn [old] (+ (or old 0) v)))) acc requirements)
+          next (filter (fn [[v k]] (not (= :ORE k))) (mapcat (fn [[v k]] (:requires (k reactions))) requirements))]
+      (recur reactions so-far next))))
 
-(defn produces?
-  "finds the fuel"
-  [type reactions]
-  (filter (partial has? type) reactions))
+(defn ore-producing?
+  "check if ingredient can be exchanged for ore"
+  [reactions [k v]]
+  (or (some (fn [[_ ky]] (= :ORE ky)) (:requires (k reactions))) false))
 
-(defn ore?
-  "does the ingredients contain ore?"
-  [[amount type]]
-  (= "ORE" type))
-
-(defn ore
-  "find the amount of ore for an ingredient"
-  [reactions [amount type]]
-  (let [ingredients (mapcat :in (produces? type reactions))
-        os (first (filter ore? ingredients))]
-    (if (nil? os)
-      (reduce (fn [acc n] (+ acc (ore reactions n))) 0 ingredients)
-      (first os))))
+(defn calculate
+  "based on the needed ingredients find the amount of ore needed"
+  [reactions ingredients amount]
+  (if (empty? ingredients)
+    amount
+    (let [[k v] (first ingredients)
+          ka (:amount (k reactions))
+          [a kk] (first (:requires (k reactions)))]
+      (recur reactions (rest ingredients) (+ amount (* a (int (Math/ceil (/ v ka)))))))))
 
 (defn day14a
   "Find the amount of ore for 1 fuel"
   [reactions]
-  (let [ingredients (:in (first (produces? "FUEL" reactions)))]
-    ingredients))
+  (let [reci (reciepe reactions {} (:requires (:FUEL reactions)))
+        requirements (filter (partial ore-producing? reactions) reci)]
+    (calculate reactions requirements 0)))
