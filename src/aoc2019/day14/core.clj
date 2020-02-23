@@ -15,33 +15,52 @@
         lines (clojure.string/split raw #"\r\n")]
     (reduce (fn [acc n] (string->reaction acc n)) {} lines)))
 
-(defn reciepe
-  "finds the ingredients for 1 fuel"
-  [reactions acc requirements]
+(defn process
+  "process the required ingredients"
+  [reactions requirements acc]
   (if (empty? requirements)
     acc
-    (let [so-far (reduce (fn [acc [v k]] (update acc k (fn [old] (+ (or old 0) v)))) acc requirements)
-          next (filter (fn [[v k]] (not (= :ORE k))) (mapcat (fn [[v k]] (:requires (k reactions))) requirements))]
-      (recur reactions so-far next))))
+    (let [[v k] (first requirements)
+          resolution (k reactions)]
+      (if (or (some (fn [[_ kk]] (= kk :ORE)) (:requires resolution)) false)
+        (recur reactions (rest requirements) (concat acc [[v k]]))
+        (let [factor (int (Math/ceil (/ v (:amount resolution))))
+              adjusted (map (fn [[v k]] [(* factor v) k]) (:requires resolution))]
+          (recur reactions (conj (rest requirements)) (concat acc adjusted)))))))
 
-(defn ore-producing?
-  "check if ingredient can be exchanged for ore"
-  [reactions [k v]]
-  (or (some (fn [[_ ky]] (= :ORE ky)) (:requires (k reactions))) false))
+(defn sum
+  "sum up the total for the ingredients"
+  [acc [k v]]
+  (let [total (reduce (fn [a [vals _]] (+ a vals)) 0 v)]
+    (concat acc [[total k]])))
+
+(defn ore?
+  "does the ingredient produce ore?"
+  [reactions [v k]]
+  (let [rs (:requires (k reactions))]
+    (or (some (fn [[v k]] (= :ORE k)) rs) false)))
 
 (defn calculate
   "based on the needed ingredients find the amount of ore needed"
   [reactions ingredients amount]
   (if (empty? ingredients)
     amount
-    (let [[k v] (first ingredients)
+    (let [[v k] (first ingredients)
           ka (:amount (k reactions))
           [a kk] (first (:requires (k reactions)))]
       (recur reactions (rest ingredients) (+ amount (* a (int (Math/ceil (/ v ka)))))))))
 
+(defn resolver
+  "keep looping until all ingredients can produce ore"
+  [reactions requirements]
+  (println requirements)
+  (if (= true (every? (partial ore? reactions) requirements))
+    requirements
+    (let [reciepe (process reactions requirements [])
+          accumulated (reduce sum [] (group-by second reciepe))]
+      (recur reactions accumulated))))
+
 (defn day14a
   "Find the amount of ore for 1 fuel"
   [reactions]
-  (let [reci (reciepe reactions {} (:requires (:FUEL reactions)))
-        requirements (filter (partial ore-producing? reactions) reci)]
-    (calculate reactions requirements 0)))
+  (calculate reactions (resolver reactions (:requires (:FUEL reactions))) 0))
