@@ -26,7 +26,7 @@
         (recur reactions (rest requirements) (concat acc [[v k]]))
         (let [factor (int (Math/ceil (/ v (:amount resolution))))
               adjusted (map (fn [[v k]] [(* factor v) k]) (:requires resolution))]
-          (recur reactions (conj (rest requirements)) (concat acc adjusted)))))))
+          (recur reactions (rest requirements) (concat acc adjusted)))))))
 
 (defn sum
   "sum up the total for the ingredients"
