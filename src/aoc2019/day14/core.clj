@@ -15,52 +15,57 @@
         lines (clojure.string/split-lines raw)]
     (reduce (fn [acc n] (string->reaction acc n)) {} lines)))
 
-(defn process
-  "process the required ingredients"
-  [reactions requirements acc]
-  (if (empty? requirements)
-    acc
-    (let [[v k] (first requirements)
-          resolution (k reactions)]
-      (if (or (some (fn [[_ kk]] (= kk :ORE)) (:requires resolution)) false)
-        (recur reactions (rest requirements) (concat acc [[v k]]))
-        (let [factor (int (Math/ceil (/ v (:amount resolution))))
-              adjusted (map (fn [[v k]] [(* factor v) k]) (:requires resolution))]
-          (recur reactions (rest requirements) (concat acc adjusted)))))))
+(defn diff
+  "sum up the total for the reactants"
+  [[v1 k1] [v2 k2]]
+  [(- v1 v2) k1])
 
 (defn sum
-  "sum up the total for the ingredients"
-  [acc [k v]]
-  (let [total (reduce (fn [a [vals _]] (+ a vals)) 0 v)]
+  "sum up the total for the reactants"
+  [acc [k vs]]
+  (let [total (reduce (fn [ac [vals _]] (+ ac vals)) 0 vs)]
     (concat acc [[total k]])))
 
 (defn ore?
   "does the ingredient produce ore?"
-  [reactions [v k]]
-  (let [rs (:requires (k reactions))]
-    (or (some (fn [[v k]] (= :ORE k)) rs) false)))
+  [reactions [_ k]]
+  (or (some (fn [[_ k]] (= :ORE k)) (:requires (k reactions))) false))
+
+(defn process
+  "process the required reactants"
+  [reactions reactants acc surplus]
+  (if (empty? reactants)
+    [acc surplus]
+    (let [[v k] (first reactants)
+          chemical (k reactions)]
+      (if (every? (partial ore? reactions) [[v k]])
+        (recur reactions (rest reactants) (concat acc [[v k]]) surplus)
+        (let [extra (or (k surplus) 0)
+              factor (int (Math/ceil (/ (- v extra) (:amount chemical))))
+              leftover (- (* factor (:amount chemical)) (- v extra))
+              adjusted (map (fn [[vv kk]] [(* factor vv) kk]) (:requires chemical))]
+          (recur reactions (rest reactants) (concat acc adjusted) (update surplus k (fn [old] (+ leftover (- (or old 0) extra))))))))))
+
+(defn react
+  "keep looping until all reactants can produce ore"
+  [reactions reactants surplus]
+  (if (every? (partial ore? reactions) reactants)
+    reactants
+    (let [[reciepe leftover] (process reactions reactants [] surplus)
+          accumulated (reduce sum [] (group-by second reciepe))]
+      (recur reactions accumulated leftover))))
 
 (defn calculate
-  "based on the needed ingredients find the amount of ore needed"
-  [reactions ingredients amount]
-  (if (empty? ingredients)
+  "based on the needed reactants find the amount of ore needed"
+  [reactions reactants amount]
+  (if (empty? reactants)
     amount
-    (let [[v k] (first ingredients)
-          ka (:amount (k reactions))
-          [a kk] (first (:requires (k reactions)))]
-      (recur reactions (rest ingredients) (+ amount (* a (int (Math/ceil (/ v ka)))))))))
-
-(defn resolver
-  "keep looping until all ingredients can produce ore"
-  [reactions requirements]
-  (println requirements)
-  (if (= true (every? (partial ore? reactions) requirements))
-    requirements
-    (let [reciepe (process reactions requirements [])
-          accumulated (reduce sum [] (group-by second reciepe))]
-      (recur reactions accumulated))))
+    (let [[total k] (first reactants)
+          chemical (:amount (k reactions))
+          [ore _] (first (:requires (k reactions)))]
+      (recur reactions (rest reactants) (+ amount (* ore (int (Math/ceil (/ total chemical)))))))))
 
 (defn day14a
   "Find the amount of ore for 1 fuel"
   [reactions]
-  (calculate reactions (resolver reactions (:requires (:FUEL reactions))) 0))
+  (calculate reactions (react reactions (:requires (:FUEL reactions)) {}) 0))
