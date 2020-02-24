@@ -73,9 +73,9 @@
     (is (= expected actual)))
   (testing "day03a"
     (def expected 209)
-    (def actual (day03a (clojure.string/split (slurp "src/aoc2019/day03/input.txt") #"\r\n")))
+    (def actual (day03a (clojure.string/split-lines (slurp "src/aoc2019/day03/input.txt"))))
     (is (= expected actual)))
   (testing "day03b"
     (def expected 43258)
-    (def actual (day03b (clojure.string/split (slurp "src/aoc2019/day03/input.txt") #"\r\n")))
+    (def actual (day03b (clojure.string/split-lines (slurp "src/aoc2019/day03/input.txt"))))
     (is (= expected actual))))

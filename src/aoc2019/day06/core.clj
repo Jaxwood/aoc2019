@@ -4,7 +4,7 @@
 (defn parse
   "parse lines into tuples"
   [raw]
-  (map #(clojure.string/split % #"\)") (clojure.string/split raw #"\r\n")))
+  (map #(clojure.string/split % #"\)") (clojure.string/split-lines raw)))
 
 (defn tuple->map
   "convert tuples into a map"

@@ -16,7 +16,7 @@
   "parse the raw input into a tuple based coordinate system"
   [filename]
   (let [raw (slurp filename)
-        lines (clojure.string/split raw #"\r\n")]
+        lines (clojure.string/split-lines raw)]
     (lines->galaxy lines 0 [])))
 
 (defn intercepting?

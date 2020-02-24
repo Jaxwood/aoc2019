@@ -12,7 +12,7 @@
   "parse file input into reactions"
   [filename]
   (let [raw (slurp filename)
-        lines (clojure.string/split raw #"\r\n")]
+        lines (clojure.string/split-lines raw)]
     (reduce (fn [acc n] (string->reaction acc n)) {} lines)))
 
 (defn process
