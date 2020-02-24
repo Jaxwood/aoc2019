@@ -15,22 +15,22 @@
     (def expected fixture)
     (def actual (parse "src/aoc2019/day14/input.txt"))
     (is (= expected actual)))
-  ;; (testing "day14a"
-    ;; (def expected 31)
-    ;; (def actual (day14a (parse "src/aoc2019/day14/input.txt")))
-    ;; (is (= expected actual)))
-  ;; (testing "day14a"
-    ;; (def expected 165)
-    ;; (def actual (day14a (parse "src/aoc2019/day14/input2.txt")))
-    ;; (is (= expected actual)))
-  ;; (testing "day14a"
-    ;; (def expected 13312)
-    ;; (def actual (day14a (parse "src/aoc2019/day14/input3.txt")))
-    ;; (is (= expected actual)))
-  ;; (testing "day14a"
-    ;; (def expected 180697)
-    ;; (def actual (day14a (parse "src/aoc2019/day14/input4.txt")))
-    ;; (is (= expected actual)))
+  (testing "day14a"
+    (def expected 31)
+    (def actual (day14a (parse "src/aoc2019/day14/input.txt")))
+    (is (= expected actual)))
+  (testing "day14a"
+    (def expected 165)
+    (def actual (day14a (parse "src/aoc2019/day14/input2.txt")))
+    (is (= expected actual)))
+  (testing "day14a"
+    (def expected 13312)
+    (def actual (day14a (parse "src/aoc2019/day14/input3.txt")))
+    (is (= expected actual)))
+  (testing "day14a"
+    (def expected 180697)
+    (def actual (day14a (parse "src/aoc2019/day14/input4.txt")))
+    (is (= expected actual)))
   (testing "day14a"
     (def expected 2210736)
     (def actual (day14a (parse "src/aoc2019/day14/input5.txt")))
