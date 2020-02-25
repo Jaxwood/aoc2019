@@ -17,14 +17,16 @@
 
 (defn calculate
   "calculate amount of ore needed for 1 fuel"
-  [reactions ingredients acc]
+  [reactions ingredients acc surplus]
   (if (empty? ingredients)
-    acc
-    (let [[k needed] (first ingredients)
-          produced (:amount (k reactions))
-          [_ ore] (first (:requires (k reactions)))
-          factor (int (Math/ceil (/ needed produced)))]
-      (recur reactions (rest ingredients) (+ acc (* ore factor))))))
+    [acc surplus]
+    (let [[k needed] (first ingredients) ;; 28 A
+          leftover (or (k surplus) 0)
+          produced (:amount (k reactions)) ;; 10 A
+          [_ ore] (first (:requires (k reactions))) ;; 10 ORE
+          factor (int (Math/ceil (/ (- needed leftover) produced)))
+          extra (- (* produced factor) needed)]
+      (recur reactions (rest ingredients) (+ acc (* ore factor)) (update surplus k (fn [old] (+ (or old 0) extra)))))))
 
 (defn group-by-type
   "groups ingredients by type"
@@ -44,7 +46,7 @@
   "start the chain reaction"
   [reactions requires acc surplus]
   (if (empty? requires)
-    acc
+    [acc surplus]
     (let [[key amount, :as ingredient] (first requires)
           chemical (key reactions)
           leftover (or (key surplus) 0)
@@ -59,6 +61,19 @@
   "Find the amount of ore for 1 fuel"
   [reactions]
   (let [fuel (:requires (:FUEL reactions))
-        ore-ingredients (chain-reaction reactions fuel [] {})
-        grouped (group-by-type reactions ore-ingredients {})]
-    (calculate reactions grouped 0)))
+        [ore-ingredients surplus] (chain-reaction reactions fuel [] {})
+        grouped (group-by-type reactions ore-ingredients {})
+        [ore _] (calculate reactions grouped 0 surplus)]
+    ore))
+
+(defn day14b
+  "Find the amount of fuel that can be produced"
+  [reactions acc amount surplus]
+  (let [fuel (:requires (:FUEL reactions))
+        [ore-ingredients extra] (chain-reaction reactions fuel [] surplus)
+        grouped (group-by-type reactions ore-ingredients {})
+        [ore leftover] (calculate reactions grouped 0 extra)
+        total (+ acc ore)]
+    (if (>= total 1000000000000)
+      amount
+      (recur reactions total (inc amount) leftover))))
