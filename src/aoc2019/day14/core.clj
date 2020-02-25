@@ -66,14 +66,22 @@
         [ore _] (calculate reactions grouped 0 surplus)]
     ore))
 
+(defn inc-dec
+  "increment fuel in big batches until a certain treshold
+  then increment with 1 fuel at a time"
+  [amount treshold]
+  (if (>= amount treshold)
+    1
+    10000))
+
 (defn day14b
   "Find the amount of fuel that can be produced"
-  [reactions acc amount surplus]
-  (let [fuel (:requires (:FUEL reactions))
+  [reactions acc amount surplus treshold]
+  (let [fuel (map (fn [[k v]] [k (* v (inc-dec amount treshold))]) (:requires (:FUEL reactions)))
         [ore-ingredients extra] (chain-reaction reactions fuel [] surplus)
         grouped (group-by-type reactions ore-ingredients {})
         [ore leftover] (calculate reactions grouped 0 extra)
         total (+ acc ore)]
     (if (>= total 1000000000000)
       amount
-      (recur reactions total (inc amount) leftover))))
+      (recur reactions total (+ amount (inc-dec amount treshold)) leftover treshold))))

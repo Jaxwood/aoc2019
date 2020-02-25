@@ -39,7 +39,7 @@
     (def expected 579797)
     (def actual (day14a (parse "src/aoc2019/day14/input6.txt")))
     (is (= expected actual)))
-  (testing "day14b - part 3"
-    (def expected 460664)
-    (def actual (day14b (parse "src/aoc2019/day14/input5.txt") 0 0 {}))
+  (testing "day14b"
+    (def expected 2521844)
+    (def actual (day14b (parse "src/aoc2019/day14/input6.txt") 0 0 {} 2520000))
     (is (= expected actual))))
