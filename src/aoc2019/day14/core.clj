@@ -5,7 +5,7 @@
   [acc raw]
   (let [matches (re-seq #"(\d+) (\w+)" raw)
         [_ amount type] (last matches)
-        requires (map (fn [[_ a t]] [(Integer/parseInt a) (keyword t)]) (drop-last matches))]
+        requires (map (fn [[_ a t]] [(keyword t) (Integer/parseInt a)]) (drop-last matches))]
     (assoc acc (keyword type) {:amount (Integer/parseInt amount) :requires requires})))
 
 (defn parse
@@ -15,57 +15,50 @@
         lines (clojure.string/split-lines raw)]
     (reduce (fn [acc n] (string->reaction acc n)) {} lines)))
 
-(defn diff
-  "sum up the total for the reactants"
-  [[v1 k1] [v2 k2]]
-  [(- v1 v2) k1])
+(defn calculate
+  "calculate amount of ore needed for 1 fuel"
+  [reactions ingredients acc]
+  (if (empty? ingredients)
+    acc
+    (let [[k needed] (first ingredients)
+          produced (:amount (k reactions))
+          [_ ore] (first (:requires (k reactions)))
+          factor (int (Math/ceil (/ needed produced)))]
+      (recur reactions (rest ingredients) (+ acc (* ore factor))))))
 
-(defn sum
-  "sum up the total for the reactants"
-  [acc [k vs]]
-  (let [total (reduce (fn [ac [vals _]] (+ ac vals)) 0 vs)]
-    (concat acc [[total k]])))
+(defn group-by-type
+  "groups ingredients by type"
+  [reactions ingredients acc]
+  (if (empty? ingredients)
+    (vec acc)
+    (let [[k v] (first ingredients)]
+      (recur reactions (rest ingredients) (update acc k (fn [old] (+ v (or old 0))))))))
 
 (defn ore?
-  "does the ingredient produce ore?"
-  [reactions [_ k]]
-  (or (some (fn [[_ k]] (= :ORE k)) (:requires (k reactions))) false))
+  "does it produce ore?"
+  [chemical]
+  (let [[k _] (first (:requires chemical))]
+    (= :ORE k)))
 
-(defn process
-  "process the required reactants"
-  [reactions reactants acc surplus]
-  (if (empty? reactants)
-    [acc surplus]
-    (let [[v k] (first reactants)
-          chemical (k reactions)]
-      (if (every? (partial ore? reactions) [[v k]])
-        (recur reactions (rest reactants) (concat acc [[v k]]) surplus)
-        (let [extra (or (k surplus) 0)
-              factor (int (Math/ceil (/ (- v extra) (:amount chemical))))
-              leftover (- (* factor (:amount chemical)) (- v extra))
-              adjusted (map (fn [[vv kk]] [(* factor vv) kk]) (:requires chemical))]
-          (recur reactions (rest reactants) (concat acc adjusted) (update surplus k (fn [old] (+ leftover (- (or old 0) extra))))))))))
-
-(defn react
-  "keep looping until all reactants can produce ore"
-  [reactions reactants surplus]
-  (if (every? (partial ore? reactions) reactants)
-    reactants
-    (let [[reciepe leftover] (process reactions reactants [] surplus)
-          accumulated (reduce sum [] (group-by second reciepe))]
-      (recur reactions accumulated leftover))))
-
-(defn calculate
-  "based on the needed reactants find the amount of ore needed"
-  [reactions reactants amount]
-  (if (empty? reactants)
-    amount
-    (let [[total k] (first reactants)
-          chemical (:amount (k reactions))
-          [ore _] (first (:requires (k reactions)))]
-      (recur reactions (rest reactants) (+ amount (* ore (int (Math/ceil (/ total chemical)))))))))
+(defn chain-reaction
+  "start the chain reaction"
+  [reactions requires acc surplus]
+  (if (empty? requires)
+    acc
+    (let [[key amount, :as ingredient] (first requires)
+          chemical (key reactions)
+          leftover (or (key surplus) 0)
+          factor (int (Math/ceil (/ (- amount leftover) (:amount chemical))))
+          extra (- (* (:amount chemical) factor) amount)
+          adjusted (map (fn [[k v]] [k (* v factor)]) (:requires chemical))]
+      (if (ore? chemical)
+        (recur reactions (rest requires) (concat acc [ingredient]) surplus)
+        (recur reactions (concat (rest requires) adjusted) acc (update surplus key (fn [old] (+ extra (or old 0)))))))))
 
 (defn day14a
   "Find the amount of ore for 1 fuel"
   [reactions]
-  (calculate reactions (react reactions (:requires (:FUEL reactions)) {}) 0))
+  (let [fuel (:requires (:FUEL reactions))
+        ore-ingredients (chain-reaction reactions fuel [] {})
+        grouped (group-by-type reactions ore-ingredients {})]
+    (calculate reactions grouped 0)))

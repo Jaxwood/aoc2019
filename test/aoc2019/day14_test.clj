@@ -4,12 +4,12 @@
 
 (deftest day14
     (def fixture {
-      :A {:amount 10 :requires [[10 :ORE]]}
-      :B {:amount 1 :requires [[1 :ORE]]}
-      :C {:amount 1 :requires [[7 :A] [1 :B]]}
-      :D {:amount 1 :requires [[7 :A] [1 :C]]}
-      :E {:amount 1 :requires [[7 :A] [1 :D]]}
-      :FUEL {:amount 1 :requires [[7 :A] [1 :E]]}
+      :A {:amount 10 :requires [[:ORE 10]]}
+      :B {:amount 1 :requires [[:ORE 1]]}
+      :C {:amount 1 :requires [[:A 7] [:B 1]]}
+      :D {:amount 1 :requires [[:A 7] [:C 1]]}
+      :E {:amount 1 :requires [[:A 7] [:D 1]]}
+      :FUEL {:amount 1 :requires [[:A 7] [:E 1]]}
     })
   (testing "parse"
     (def expected fixture)
