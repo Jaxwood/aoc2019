@@ -20,10 +20,10 @@
   [reactions ingredients acc surplus]
   (if (empty? ingredients)
     [acc surplus]
-    (let [[k needed] (first ingredients) ;; 28 A
+    (let [[k needed] (first ingredients)
           leftover (or (k surplus) 0)
-          produced (:amount (k reactions)) ;; 10 A
-          [_ ore] (first (:requires (k reactions))) ;; 10 ORE
+          produced (:amount (k reactions))
+          [_ ore] (first (:requires (k reactions)))
           factor (int (Math/ceil (/ (- needed leftover) produced)))
           extra (- (* produced factor) needed)]
       (recur reactions (rest ingredients) (+ acc (* ore factor)) (update surplus k (fn [old] (+ (or old 0) extra)))))))
