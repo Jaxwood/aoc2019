@@ -49,9 +49,10 @@
         pos [x y]]
     (if (= pos until)
       weight
-      (let [candidates (filter (fn [pos] (and (not (contains? visited pos)) (= :floor (get maze pos)))) (map second [(travel north pos) (travel south pos) (travel west pos) (travel east pos)]))
-            next (into (rest visit) (map (fn [[x y]] [x y (inc weight)]) candidates))]
-        (recur until maze next (into visited [pos]))))))
+      (let [positions (map second [(travel north pos) (travel south pos) (travel west pos) (travel east pos)])
+            candidates (filter (fn [pos] (and (not (contains? visited pos)) (= :floor (get maze pos)))) positions)
+            moves (into (rest visit) (map (fn [[x y]] [x y (inc weight)]) candidates))]
+        (recur until maze moves (into visited [pos]))))))
 
 (defn traverse
   "traverse the ship"
