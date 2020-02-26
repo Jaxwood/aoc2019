@@ -5,6 +5,6 @@
 
 (deftest day15
   (testing "day15a"
-    (def expected 0)
+    (def expected 218)
     (def actual (day15a (parse "src/aoc2019/day15/input.txt")))
     (is (= expected actual))))

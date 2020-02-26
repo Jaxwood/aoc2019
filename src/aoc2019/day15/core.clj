@@ -39,8 +39,19 @@
         s (travel south pos)
         w (travel west pos)
         e (travel east pos)
-        candidates (sort-by (partial visited? visited) (filter (partial open? maze) [n s w e]))]
+        candidates (sort-by (partial visited? visited) (filter (partial open? maze) [s w e n]))]
     (first candidates)))
+
+(defn shortest-path
+  "finds the shortest path"
+  [until maze visit visited]
+  (let [[x y weight] (first visit)
+        pos [x y]]
+    (if (= pos until)
+      weight
+      (let [candidates (filter (fn [pos] (and (not (contains? visited pos)) (= :floor (get maze pos)))) (map second [(travel north pos) (travel south pos) (travel west pos) (travel east pos)]))
+            next (into (rest visit) (map (fn [[x y]] [x y (inc weight)]) candidates))]
+        (recur until maze next (into visited [pos]))))))
 
 (defn traverse
   "traverse the ship"
@@ -51,7 +62,7 @@
     (cond
       (= status wall) (recur state pos (assoc maze [x y] :wall) (update visited [x y] (fn [old] (inc (or old 0)))))
       (= status move) (recur state [x y] (assoc maze [x y] :floor) (update visited [x y] (fn [old] (inc (or old 0)))))
-      (= status oxygen) 2)))
+      (= status oxygen) (shortest-path [0 0] maze [[x y 0]] #{}))))
 
 (defn day15a
   "find the moves required to reach the oxygen module"
