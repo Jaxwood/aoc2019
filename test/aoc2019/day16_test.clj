@@ -10,4 +10,12 @@
   (testing "string->numbers"
     (def expected '(0 1 4 2 5 3))
     (def actual (string->numbers "014253"))
+    (is (= expected actual)))
+  (testing "fft"
+    (def expected "48226158")
+    (def actual (fft 1 '(1 2 3 4 5 6 7 8) ""))
+    (is (= expected actual)))
+  (testing "day16a"
+    (def expected "01029498")
+    (def actual (day16a "12345678" 4))
     (is (= expected actual))))
