@@ -11,3 +11,8 @@
                      (repeat
                       (+ 1 (int (Math/ceil (/ size (* times 4)))))
                       (mapcat (partial repeat times) base))))))
+
+(defn string->numbers
+  "parse input string to numbers"
+  [numberstring]
+  (map (fn [x] (Integer/parseInt (str x))) numberstring))
