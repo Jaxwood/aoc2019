@@ -12,23 +12,36 @@
                       (+ 1 (int (Math/ceil (/ size (* times 4)))))
                       (mapcat (partial repeat times) base))))))
 
-(defn string->numbers
-  "parse input string to numbers"
-  [numberstring]
-  (map (fn [x] (Integer/parseInt (str x))) numberstring))
+(def repeatmem (memoize repeating))
+
+(defn number->digits
+  "convert number into digits"
+  [num]
+  (loop [n num res []]
+    (if (zero? n)
+      res
+      (recur (quot n 10) (cons (mod n 10) res)))))
+
+(defn abs
+  "get the absolute value"
+  [val]
+  (if (pos? val)
+    val
+    (* -1 val)))
 
 (defn fft
   "flawed frequency transmission algorithm"
   [times input acc]
-  (if (> times (count input))
-    acc
-    (let [pattern (repeating times (count input))
-          val (mod (Math/abs (reduce + 0 (map (fn [a b] (* a b)) input pattern))) 10)]
-      (recur (inc times) input (str acc val)))))
+  (let [size (count input)]
+    (if (> times size)
+      acc
+      (let [pattern (repeatmem times size)
+            val (mod (abs (reduce + 0 (map (fn [a b] (* a b)) input pattern))) 10)]
+        (recur (inc times) input (conj acc val))))))
 
 (defn day16a
   "clean up the signals"
   [input phases]
   (if (= 0 phases)
     input
-    (recur (fft 1 (string->numbers input) "") (dec phases))))
+    (recur (fft 1 input []) (dec phases))))
