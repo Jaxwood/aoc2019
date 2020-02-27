@@ -7,4 +7,8 @@
   (testing "day15a"
     (def expected 218)
     (def actual (day15a (parse "src/aoc2019/day15/input.txt")))
+    (is (= expected actual)))
+  (testing "day15b"
+    (def expected 544)
+    (def actual (day15b (parse "src/aoc2019/day15/input.txt")))
     (is (= expected actual))))

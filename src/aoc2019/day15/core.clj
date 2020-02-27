@@ -65,7 +65,35 @@
       (= status move) (recur state [x y] (assoc maze [x y] :floor) (update visited [x y] (fn [old] (inc (or old 0)))))
       (= status oxygen) (shortest-path [0 0] maze [[x y 0]] #{}))))
 
+(defn open-vent
+  "spread the oxygen into the maze"
+  [maze visited visit acc]
+  (let [neighbors (mapcat (fn [pos] [(travel north pos) (travel south pos) (travel east pos) (travel west pos)]) visit)
+        open (filter (fn [pos] (and (open? maze pos) (not (contains? visited (second pos))))) neighbors)]
+    (if (empty? open)
+      acc
+      (recur maze (into visited visit) (map second open) (inc acc)))))
+
+(defn explore
+  "explore the whole maze"
+  [iteration program pos maze visited]
+  (if (= iteration 2500)
+    (let [[target _] (first (filter (fn [[k v]] (= v :target)) maze))]
+      (open-vent maze #{} [target] 0))
+    (let [[direction [x y]] (navigate pos maze visited)
+          state (run (assoc program :input [direction]))
+          status (:output state)]
+      (cond
+        (= status wall) (recur (inc iteration) state pos (assoc maze [x y] :wall) (update visited [x y] (fn [old] (inc (or old 0)))))
+        (= status move) (recur (inc iteration) state [x y] (assoc maze [x y] :floor) (update visited [x y] (fn [old] (inc (or old 0)))))
+        (= status oxygen) (recur (inc iteration) state [x y] (assoc maze [x y] :target) (update visited [x y] (fn [old] (inc (or old 0)))))))))
+
 (defn day15a
   "find the moves required to reach the oxygen module"
   [memory]
   (traverse {:memory memory :address 0 :input [] :relative 0} [0 0] {[0 0] :floor} {[0 0] 1}))
+
+(defn day15b
+  "find the number of turns before the maze has oxygen"
+  [memory]
+  (explore 1 {:memory memory :address 0 :input [] :relative 0} [0 0] {[0 0] :floor} {[0 0] 1}))
