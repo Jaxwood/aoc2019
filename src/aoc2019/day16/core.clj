@@ -2,46 +2,52 @@
 
 (def base '(0 1 0 -1))
 
-(defn repeating
-  "repeat the base pattern"
-  [times size]
-  (take size
-        (drop 1
-              (apply concat
-                     (repeat
-                      (+ 1 (int (Math/ceil (/ size (* times 4)))))
-                      (mapcat (partial repeat times) base))))))
+(defn offset
+  "get the offset to read from"
+  [input]
+  (Integer/parseInt (apply str (take 7 input))))
 
-(def repeatmem (memoize repeating))
+(defn pattern
+  "find the pattern value based on index"
+  [recurring idx]
+  (let [c (* recurring 4)
+        i (mod idx c)]
+    (cond
+      (< i recurring) 0
+      (< i (* 2 recurring)) 1
+      (< i (* 3 recurring)) 0
+      (< i (* 4 recurring)) -1)))
 
-(defn number->digits
-  "convert number into digits"
-  [num]
-  (loop [n num res []]
-    (if (zero? n)
-      res
-      (recur (quot n 10) (cons (mod n 10) res)))))
-
-(defn abs
-  "get the absolute value"
-  [val]
-  (if (pos? val)
-    val
-    (* -1 val)))
+(defn calculate
+  "calculate output digit"
+  [input recurring]
+  (mod (Math/abs (apply + (map-indexed (fn [idx num] (* num (pattern recurring (inc idx)))) input))) 10))
 
 (defn fft
-  "flawed frequency transmission algorithm"
-  [times input acc]
-  (let [size (count input)]
-    (if (> times size)
-      acc
-      (let [pattern (repeatmem times size)
-            val (mod (abs (reduce + 0 (map (fn [a b] (* a b)) input pattern))) 10)]
-        (recur (inc times) input (conj acc val))))))
+  ""
+  [input phases]
+  (if (= phases 0)
+    input
+    (recur (map-indexed (fn [idx num] (calculate input (inc idx))) input) (dec phases))))
+
+(defn fft-optimized
+  ""
+  [input base phases]
+  (if (= phases 0)
+    input
+    (recur (map-indexed (fn [idx num] (calculate input (+ base (inc idx)))) input) base (dec phases))))
 
 (defn day16a
-  "clean up the signals"
+  ""
+  [filename phases]
+  (let [raw (slurp filename)
+        ints (map (fn [x] (Integer/parseInt (str x))) raw)]
+    (take 8 (fft ints phases))))
+
+(defn day16b
+  ""
   [input phases]
-  (if (= 0 phases)
-    input
-    (recur (fft 1 input []) (dec phases))))
+  (let [extended (apply str (repeat 10000 input))
+        idx (offset input)
+        in (map (fn [x] (Integer/parseInt (str x))) (last (split-at idx extended)))]
+    0));;(fft-optimized in idx phases)))
