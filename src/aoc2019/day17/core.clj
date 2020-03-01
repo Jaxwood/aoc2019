@@ -25,7 +25,8 @@
   (cond
     (= output 46) "."
     (= output 35) "#"
-    (= output 10) "\r\n"))
+    (= output 10) "\r\n"
+    :else (str (char output))))
 
 (defn draw
   "draw the camera output"
@@ -55,8 +56,7 @@
    (= 35 (get scaffold [(inc x) y]))
    (= 35 (get scaffold [(dec x) y]))
    (= 35 (get scaffold [x (inc y)]))
-   (= 35 (get scaffold [x (dec y)]))
-   ))
+   (= 35 (get scaffold [x (dec y)]))))
 
 (defn sum
   "find the sum of the alignment parameters"
