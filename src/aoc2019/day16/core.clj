@@ -1,4 +1,5 @@
 (ns aoc2019.day16.core)
+(set! *warn-on-reflection* true)
 
 (def base '(0 1 0 -1))
 
@@ -21,7 +22,7 @@
 (defn calculate
   "calculate output digit"
   [input base recurring]
-  (mod (Math/abs (apply + (map-indexed (fn [idx num] (* num (pattern recurring (+ base (inc idx))))) input))) 10))
+  (mod (Math/abs ^Integer (apply + (map-indexed (fn [idx num] (* num (pattern recurring (+ base (inc idx))))) input))) 10))
 
 (defn fft
   "flawed frequency transmission"
@@ -42,11 +43,10 @@
   "find the signal output after repeating input 10000 times"
   [raw phases]
   (let [extended (apply str (repeat 10000 raw))
-        base (offset raw)
-        in (map (fn [x] (Integer/parseInt (str x))) (last (split-at base extended)))]
-    (loop [input in acc [] phase phases]
-      (if (= 0 phase)
+        in (map (fn [x] (Integer/parseInt (str x))) (last (split-at (offset raw) extended)))]
+    (loop [input in phase phases]
+      (if (= phase 0)
         (take 8 input)
-        (if (empty? input)
-          (recur acc [] (dec phase))
-          (recur (rest input) (conj acc (mod (reduce + 0 input) 10)) phase))))))
+        (let [head (reduce + 0 input)
+              tail (reduce (fn [acc x] (cons (- (first acc) x) acc)) [head] input)]
+          (recur (map (fn [x] (mod x 10)) (reverse tail)) (dec phase)))))))

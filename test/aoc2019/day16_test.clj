@@ -16,7 +16,6 @@
     (def actual (day16a "src/aoc2019/day16/input.txt" 100))
     (is (= expected actual)))
   (testing "day16b testcase"
-    (def expected '(8 4 4 6 2 0 2 6))
-    (def actual (day16b "03036732577212944063491565474664" 100))
-    ;;(def actual (day16b (slurp "src/aoc2019/day16/input.txt") 100))
+    (def expected '(8 0 2 8 4 4 2 0))
+    (def actual (day16b (slurp "src/aoc2019/day16/input.txt") 100))
     (is (= expected actual))))
