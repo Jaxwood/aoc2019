@@ -4,43 +4,42 @@
 
 (deftest day06
   (testing "parse"
-    (def expected [["COM" "B"] ["B" "C"] ["C" "D"] ["D" "E"] ["E" "F"] ["B" "G"] ["G" "H"] ["D" "I"] ["E" "J"] ["J" "K"] ["K" "L"]])
-    (def actual (parse (slurp "src/aoc2019/day06/a.txt")))
-    (is (= expected actual)))
+    (let [expected [["COM" "B"] ["B" "C"] ["C" "D"] ["D" "E"] ["E" "F"] ["B" "G"] ["G" "H"] ["D" "I"] ["E" "J"] ["J" "K"] ["K" "L"]]
+          actual (parse (slurp "src/aoc2019/day06/a.txt"))]
+      (is (= expected actual))))
   (testing "tuple->map"
-    (def expected { "A" ["B" "C"], "D" ["E"]})
-    (def actual (tuple->map { "A" ["B"] "D" ["E"] } ["A", "C"]))
-    (is (= expected actual)))
+    (let [expected {"A" ["B" "C"], "D" ["E"]}
+          actual (tuple->map {"A" ["B"] "D" ["E"]} ["A", "C"])]
+      (is (= expected actual))))
   (testing "orbit-counter 1"
-    (def expected 1)
-    (def actual (orbit-counter {"A" ["B"], "B" ["C"]} ["C"] 0))
-    (is (= expected actual)))
+    (let [expected 1
+          actual (orbit-counter {"A" ["B"], "B" ["C"]} ["C"] 0)]
+      (is (= expected actual))))
   (testing "orbit-counter 2"
-    (def expected 2)
-    (def actual (orbit-counter {"A" ["B"], "B" ["C"]} ["B"] 0))
-    (is (= expected actual)))
+    (let [expected 2
+          actual (orbit-counter {"A" ["B"], "B" ["C"]} ["B"] 0)]
+      (is (= expected actual))))
   (testing "orbit-counter 3"
-    (def expected 6)
-    (def actual (orbit-counter {"D" ["E" "I"], "E" ["F" "J"], "J" ["K"], "K" ["L"]} ["E" "I"] 0))
-    (is (= expected actual)))
+    (let [expected 6
+          actual (orbit-counter {"D" ["E" "I"], "E" ["F" "J"], "J" ["K"], "K" ["L"]} ["E" "I"] 0)]
+      (is (= expected actual))))
   (testing "day06a"
-    (def expected 42)
-    (def actual (day06a "src/aoc2019/day06/a.txt"))
-    (is (= expected actual)))
+    (let [expected 42
+          actual (day06a "src/aoc2019/day06/a.txt")]
+      (is (= expected actual))))
   (testing "day06a"
-    (def expected 151345)
-    (def actual (day06a "src/aoc2019/day06/input.txt"))
-    (is (= expected actual)))
+    (let [expected 151345
+          actual (day06a "src/aoc2019/day06/input.txt")]
+      (is (= expected actual))))
   (testing "neighbors"
-    (def expected ["D"])
-    (def actual (neighbors { "A" ["B" "C"], "B" ["D"], "C" ["E"] } ["A"] "B" ))
-    (is (= expected actual)))
+    (let [expected ["D"]
+          actual (neighbors {"A" ["B" "C"], "B" ["D"], "C" ["E"]} ["A"] "B")]
+      (is (= expected actual))))
   (testing "neighbors"
-    (def expected [])
-    (def actual (neighbors { "A" ["B"], "B" ["D"] } ["B"] "D" ))
-    (is (= expected actual)))
+    (let [expected []
+          actual (neighbors {"A" ["B"], "B" ["D"]} ["B"] "D")]
+      (is (= expected actual))))
   (testing "day06b"
-    (def expected 5)
-    (def actual (day06b "src/aoc2019/day06/b.txt"))
-    (is (= expected actual)))
-  )
+    (let [expected 5
+          actual (day06b "src/aoc2019/day06/b.txt")]
+      (is (= expected actual)))))

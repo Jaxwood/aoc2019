@@ -4,14 +4,14 @@
 
 (deftest day08
   (testing "day08a"
-    (def expected 2440) 
-    (def actual (day08a "src/aoc2019/day08/input.txt"))
-    (is (= expected actual)))
+    (let [expected 2440
+          actual (day08a "src/aoc2019/day08/input.txt")]
+      (is (= expected actual))))
   (testing "transpose"
-    (def expected [[1 1] [2 2]]) 
-    (def actual (transpose [[1 2] [1 2]]))
-    (is (= expected actual)))
+    (let [expected [[1 1] [2 2]]
+          actual (transpose [[1 2] [1 2]])]
+      (is (= expected actual))))
   (testing "day08b"
-    (def expected [[0 1 1 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 0 0 1 1 0 0] [1 0 0 1 0 0 0 0 1 0 1 0 0 1 0 0 0 0 1 0 1 0 0 1 0] [1 0 0 1 0 0 0 1 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 0 0] [1 1 1 1 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 0 0] [1 0 0 1 0 1 0 0 0 0 1 0 0 1 0 1 0 0 1 0 1 0 0 1 0] [1 0 0 1 0 1 1 1 1 0 0 1 1 0 0 0 1 1 0 0 0 1 1 0 0]])
-    (def actual (day08b "src/aoc2019/day08/input.txt"))
-    (is (= expected actual))))
+    (let [expected [[0 1 1 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 0 0 1 1 0 0] [1 0 0 1 0 0 0 0 1 0 1 0 0 1 0 0 0 0 1 0 1 0 0 1 0] [1 0 0 1 0 0 0 1 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 0 0] [1 1 1 1 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 0 0] [1 0 0 1 0 1 0 0 0 0 1 0 0 1 0 1 0 0 1 0 1 0 0 1 0] [1 0 0 1 0 1 1 1 1 0 0 1 1 0 0 0 1 1 0 0 0 1 1 0 0]]
+          actual (day08b "src/aoc2019/day08/input.txt")]
+      (is (= expected actual)))))

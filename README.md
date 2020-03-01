@@ -7,3 +7,11 @@ Solutions for [Advent of Code 2019](https://adventofcode.com/2019) written in Cl
 ## Testcases
 
 To run the test cases use `lein test`
+
+## Linting
+
+To run the linter use `lein eastwood`
+
+## Dependencies
+
+- [Eastwood](https://github.com/jonase/eastwood)
