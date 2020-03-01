@@ -1,10 +1,11 @@
-(ns aoc2019.day06.core)
-(require '[clojure.set :refer [difference]])
+(ns aoc2019.day06.core
+  (:require [clojure.set :refer [difference]]
+            [clojure.string :refer [split split-lines]]))
 
 (defn parse
   "parse lines into tuples"
   [raw]
-  (map #(clojure.string/split % #"\)") (clojure.string/split-lines raw)))
+  (map #(split % #"\)") (split-lines raw)))
 
 (defn tuple->map
   "convert tuples into a map"
@@ -55,4 +56,4 @@
   (let [raw (slurp filename)
         objects (reduce #(tuple->map %1 %2) {} (parse raw))
         start (vec (keys (filter #(finder % "YOU") objects)))]
-        (santa-finder objects (vector (conj start 1)) ["YOU"] "SAN")))
+    (santa-finder objects (vector (conj start 1)) ["YOU"] "SAN")))

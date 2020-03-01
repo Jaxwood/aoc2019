@@ -1,4 +1,5 @@
-(ns aoc2019.day14.core)
+(ns aoc2019.day14.core
+  (:require [clojure.string :refer [split-lines]]))
 
 (defn string->reaction
   "parse a string into a series of reactions"
@@ -12,7 +13,7 @@
   "parse file input into reactions"
   [filename]
   (let [raw (slurp filename)
-        lines (clojure.string/split-lines raw)]
+        lines (split-lines raw)]
     (reduce (fn [acc n] (string->reaction acc n)) {} lines)))
 
 (defn calculate
@@ -47,15 +48,15 @@
   [reactions requires acc surplus]
   (if (empty? requires)
     [acc surplus]
-    (let [[key amount, :as ingredient] (first requires)
-          chemical (key reactions)
-          leftover (or (key surplus) 0)
+    (let [[k amount, :as ingredient] (first requires)
+          chemical (k reactions)
+          leftover (or (k surplus) 0)
           factor (int (Math/ceil (/ (- amount leftover) (:amount chemical))))
           extra (- (* (:amount chemical) factor) amount)
           adjusted (map (fn [[k v]] [k (* v factor)]) (:requires chemical))]
       (if (ore? chemical)
         (recur reactions (rest requires) (concat acc [ingredient]) surplus)
-        (recur reactions (concat (rest requires) adjusted) acc (update surplus key (fn [old] (+ extra (or old 0)))))))))
+        (recur reactions (concat (rest requires) adjusted) acc (update surplus k (fn [old] (+ extra (or old 0)))))))))
 
 (defn day14a
   "Find the amount of ore for 1 fuel"

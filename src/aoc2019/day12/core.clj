@@ -32,7 +32,7 @@
 (defn abs
   "get the absolute value"
   [value]
-  (Math/abs value))
+  (Math/abs ^Integer value))
 
 (defn mabs
   "get the absolute value"
@@ -46,14 +46,16 @@
                 (map #(apply + %1) (map mabs moons))
                 (map #(apply + %1) (map mabs velocity)))))
 
-(defn gcd [a b]
+(defn gcd
   "greatest common divisor"
+  [a b]
   (if (zero? b)
     a
     (recur b (mod a b))))
 
-(defn lcm [a b]
+(defn lcm
   "least common multiple"
+  [a b]
   (/ (* a b) (gcd a b)))
 
 (defn find-repeating-step

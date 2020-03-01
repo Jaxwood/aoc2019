@@ -1,4 +1,5 @@
-(ns aoc2019.day01.core)
+(ns aoc2019.day01.core
+  (:require [clojure.string :refer [split-lines]]))
 
 (defn calculateFuel
   "Calculate fuel required to launch module"
@@ -8,21 +9,21 @@
 (defn calculateAdditionalFuel
   "Calculate additional fuel required to launch module"
   [mass sum]
-  (def fuel (calculateFuel mass))
-  (if (<= fuel 0)
-    sum
-    (calculateAdditionalFuel fuel (+ sum fuel))))
+  (let [fuel (calculateFuel mass)]
+    (if (<= fuel 0)
+      sum
+      (calculateAdditionalFuel fuel (+ sum fuel)))))
 
 (defn day01a
   "Day01a"
   [filename]
-  (def raw (slurp filename))
-  (def masses (map #(Integer/parseInt %1) (clojure.string/split-lines raw)))
-  (reduce + 0 (map calculateFuel masses)))
+  (let [raw (slurp filename)
+        masses (map #(Integer/parseInt %1) (split-lines raw))]
+    (reduce + 0 (map calculateFuel masses))))
 
 (defn day01b
   "Day01b"
   [filename]
-  (def raw (slurp filename))
-  (def masses (map #(Integer/parseInt %1) (clojure.string/split-lines raw)))
-  (reduce + 0 (map #(calculateAdditionalFuel %1 0) masses)))
+  (let [raw (slurp filename)
+        masses (map #(Integer/parseInt %1) (split-lines raw))]
+    (reduce + 0 (map #(calculateAdditionalFuel %1 0) masses))))

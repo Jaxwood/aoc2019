@@ -1,4 +1,5 @@
-(ns aoc2019.day10.core)
+(ns aoc2019.day10.core
+  (:require [clojure.string :refer [split-lines]]))
 
 (defn lines->galaxy
   "Parse raw lines into tuples"
@@ -16,7 +17,7 @@
   "parse the raw input into a tuple based coordinate system"
   [filename]
   (let [raw (slurp filename)
-        lines (clojure.string/split-lines raw)]
+        lines (split-lines raw)]
     (lines->galaxy lines 0 [])))
 
 (defn intercepting?

@@ -1,13 +1,14 @@
-(ns intcode.core)
+(ns intcode.core
+  (:require [clojure.string :refer [split-lines split]]))
 
 (defn parse
   "parse instructions as a raw comma delimited string
    and puts it into a vector"
   [filename]
-  (def raw (slurp filename))
-  (def firstLine (first (clojure.string/split-lines raw)))
-  (def sequences (map #(Long/valueOf %1) (clojure.string/split firstLine #",")))
-  (into [] sequences))
+  (let [raw (slurp filename)
+        firstLine (first (split-lines raw))
+        sequences (map #(Long/valueOf %1) (split firstLine #","))]
+    (into [] sequences)))
 
 (defn digits
   "extract digits and append leading zeros
