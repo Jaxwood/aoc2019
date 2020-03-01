@@ -20,34 +20,33 @@
 
 (defn calculate
   "calculate output digit"
-  [input recurring]
-  (mod (Math/abs (apply + (map-indexed (fn [idx num] (* num (pattern recurring (inc idx)))) input))) 10))
+  [input base recurring]
+  (mod (Math/abs (apply + (map-indexed (fn [idx num] (* num (pattern recurring (+ base (inc idx))))) input))) 10))
 
 (defn fft
-  ""
-  [input phases]
-  (if (= phases 0)
-    input
-    (recur (map-indexed (fn [idx num] (calculate input (inc idx))) input) (dec phases))))
-
-(defn fft-optimized
-  ""
+  "flawed frequency transmission"
   [input base phases]
   (if (= phases 0)
     input
-    (recur (map-indexed (fn [idx num] (calculate input (+ base (inc idx)))) input) base (dec phases))))
+    (let [next (map-indexed (fn [idx num] (calculate (drop idx input) (+ idx base) (inc idx))) input)]
+      (recur next base (dec phases)))))
 
 (defn day16a
-  ""
+  "find the signal output"
   [filename phases]
   (let [raw (slurp filename)
         ints (map (fn [x] (Integer/parseInt (str x))) raw)]
-    (take 8 (fft ints phases))))
+    (take 8 (fft ints 0 phases))))
 
 (defn day16b
-  ""
-  [input phases]
-  (let [extended (apply str (repeat 10000 input))
-        idx (offset input)
-        in (map (fn [x] (Integer/parseInt (str x))) (last (split-at idx extended)))]
-    0));;(fft-optimized in idx phases)))
+  "find the signal output after repeating input 10000 times"
+  [raw phases]
+  (let [extended (apply str (repeat 10000 raw))
+        base (offset raw)
+        in (map (fn [x] (Integer/parseInt (str x))) (last (split-at base extended)))]
+    (loop [input in acc [] phase phases]
+      (if (= 0 phase)
+        (take 8 input)
+        (if (empty? input)
+          (recur acc [] (dec phase))
+          (recur (rest input) (conj acc (mod (reduce + 0 input) 10)) phase))))))
