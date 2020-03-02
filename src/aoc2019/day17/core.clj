@@ -3,11 +3,13 @@
 
 (defn camera
   "retrieve the camera output"
-  [program acc]
-  (let [state (run program)]
-    (if (= (:status state) :stopped)
-      acc
-      (recur state (conj acc (:output state))))))
+  [program inputs acc]
+  (let [state (run program)
+        status (:status state)]
+    (cond
+      (= status :stopped) acc
+      (= status :interruptible) (recur (assoc state :input [(first inputs)]) (rest inputs) acc)
+      :else (recur state inputs (conj acc (:output state))))))
 
 (defn new-line?
   "predicate to check for new line character"
@@ -66,6 +68,18 @@
 (defn day17a
   "calculate solution for day17a"
   [memory]
-  (let [camera-output (camera {:memory memory :address 0 :relative 0 :input []} [])
+  (let [camera-output (camera {:memory memory :address 0 :relative 0 :input []} [] [])
         scaffold (coords (camera-lines camera-output) 0 {})]
     (reduce sum 0 (filter (partial intersection? scaffold) scaffold))))
+
+(defn day17b
+  "calculate solution for day17b"
+  [memory]
+  (let [main []
+        a-routine []
+        b-routine []
+        c-routine []
+        yes-no []
+        inputs [main a-routine b-routine c-routine yes-no]
+        camera-output (camera {:memory (assoc memory 0 2) :address 0 :relative 0 :input []} inputs [])]
+    0))

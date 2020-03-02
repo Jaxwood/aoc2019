@@ -7,4 +7,8 @@
   (testing "day17a"
     (let [expected 4688
           actual (day17a (parse "src/aoc2019/day17/input.txt"))]
+      (is (= expected actual))))
+  (testing "day17b"
+    (let [expected 0
+          actual (day17b (parse "src/aoc2019/day17/input.txt"))]
       (is (= expected actual)))))
