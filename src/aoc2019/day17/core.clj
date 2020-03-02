@@ -84,11 +84,11 @@
 (defn day17b
   "calculate solution for day17b"
   [memory]
-  (let [main (translate "A,B,C")
-        a-routine (translate "R,8")
-        b-routine (translate "L,8")
-        c-routine (translate "R,8")
+  (let [main (translate "B,C,B,A,C,A,C,A,B,C")
+        a-routine (translate "L,4,R,4,L,4,R,8")
+        b-routine (translate "L,6,L,4,R,8")
+        c-routine (translate "R,8,L,6,L,4,L,10,R,8")
         yes-no (translate "n")
         inputs [main a-routine b-routine c-routine yes-no]
         camera-output (camera {:memory (assoc memory 0 2) :address 0 :relative 0 :input []} inputs [])]
-    (:output camera-output)))
+    (last camera-output)))

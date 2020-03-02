@@ -13,6 +13,6 @@
           actual (translate "A,B,C,B,A,C")]
       (is (= expected actual))))
   (testing "day17b"
-    (let [expected 0
+    (let [expected 714866
           actual (day17b (parse "src/aoc2019/day17/input.txt"))]
       (is (= expected actual)))))
