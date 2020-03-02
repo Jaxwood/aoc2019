@@ -1,5 +1,6 @@
 (ns aoc2019.day17.core
-  (:require [intcode.core :refer [run]]))
+  (:require [intcode.core :refer [run]]
+            [clojure.string :as s]))
 
 (defn camera
   "retrieve the camera output"
@@ -8,7 +9,7 @@
         status (:status state)]
     (cond
       (= status :stopped) acc
-      (= status :interruptible) (recur (assoc state :input [(first inputs)]) (rest inputs) acc)
+      (= status :interruptible) (recur (assoc state :input (first inputs)) (rest inputs) acc)
       :else (recur state inputs (conj acc (:output state))))))
 
 (defn new-line?
@@ -72,14 +73,22 @@
         scaffold (coords (camera-lines camera-output) 0 {})]
     (reduce sum 0 (filter (partial intersection? scaffold) scaffold))))
 
+(defn translate
+  "translate instruction into machine commands"
+  [commands]
+  (loop [instructions commands acc []]
+    (if (empty? instructions)
+      (conj acc 10)
+      (recur (rest instructions) (conj acc (int (first instructions)))))))
+
 (defn day17b
   "calculate solution for day17b"
   [memory]
-  (let [main []
-        a-routine []
-        b-routine []
-        c-routine []
-        yes-no []
+  (let [main (translate "A,B,C")
+        a-routine (translate "R,8")
+        b-routine (translate "L,8")
+        c-routine (translate "R,8")
+        yes-no (translate "n")
         inputs [main a-routine b-routine c-routine yes-no]
         camera-output (camera {:memory (assoc memory 0 2) :address 0 :relative 0 :input []} inputs [])]
-    0))
+    (:output camera-output)))
