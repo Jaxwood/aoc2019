@@ -4,6 +4,6 @@
 
 (deftest day18
   (testing "day18a"
-    (let [expected 0
+    (let [expected 8
           actual (day18a (parse "src/aoc2019/day18/a.txt"))]
       (is (= expected actual)))))
