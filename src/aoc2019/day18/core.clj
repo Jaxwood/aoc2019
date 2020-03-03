@@ -34,12 +34,12 @@
 (def key? #(contains? all-keys %))
 
 (defn unlocks
-   "find the door the key unlocks"
+  "find the door the key unlocks"
   [k]
   (-> k
-    name
-    upper-case
-    keyword))
+      name
+      upper-case
+      keyword))
 
 (defn neighbors
   "find the neighbors squares that is passable"
@@ -54,9 +54,25 @@
             (recur (rest lst) acc)
             (recur (rest lst) (conj acc next))))))))
 
+(def visited? (fn [visited pos] (nil? (get visited pos))))
+
+(defn traverse
+  "traverse the vault"
+  [vault cur visit visited]
+  (if (empty? (filter (comp key? second) vault))
+    (apply max (vals visited))
+    (let [moves (get visited cur)
+          pos (first visit)
+          type (get vault pos)
+          adjecent (filter (partial visited? visited) (neighbors vault pos))]
+      (if (key? type)
+        (let [door (first (filter (fn [[_ t]] (= t (unlocks type))) vault))
+              open-vault (assoc (assoc vault (first door) :open) pos :open)]
+          (recur open-vault pos (neighbors open-vault pos) {pos (inc moves)}))
+        (recur vault pos (into (rest visit) adjecent) (conj visited [pos (inc moves)]))))))
+
 (defn day18a
   "solution for day18a"
   [vault]
-  (let [all-keys (filter (fn [[_ type]] (key? type)) vault)
-        [pos _] (first (filter (fn [[_ type]] (current? type)) vault))]
-    (neighbors vault pos)))
+  (let [[pos _] (first (filter (comp current? second) vault))]
+    (traverse vault pos (neighbors vault pos) {pos 0})))
