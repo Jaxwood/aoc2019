@@ -1,5 +1,5 @@
 (ns aoc2019.day18.core
-  (:require [clojure.string :refer [split-lines]]))
+  (:require [clojure.string :refer [split-lines upper-case]]))
 
 (defn tile
   "find the tile"
@@ -32,6 +32,14 @@
 (def current? #(= :current %))
 (def door? #(contains? all-doors %))
 (def key? #(contains? all-keys %))
+
+(defn unlocks
+   "find the door the key unlocks"
+  [k]
+  (-> k
+    name
+    upper-case
+    keyword))
 
 (defn neighbors
   "find the neighbors squares that is passable"
