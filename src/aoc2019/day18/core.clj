@@ -58,21 +58,17 @@
 
 (defn traverse
   "traverse the vault"
-  [vault cur visit visited]
-  (if (empty? (filter (comp key? second) vault))
-    (apply max (vals visited))
-    (let [moves (get visited cur)
-          pos (first visit)
-          type (get vault pos)
-          adjecent (filter (partial unvisited? visited) (neighbors vault pos))]
-      (if (key? type)
-        (let [door (first (filter (fn [[_ t]] (= t (unlocks type))) vault))
-              open-vault (assoc (assoc vault (first door) :open) pos :open)]
-          (recur open-vault pos (neighbors open-vault pos) {pos (inc moves)}))
-        (recur vault pos (into (rest visit) adjecent) (conj visited [pos (inc moves)]))))))
+  [tovisit acc]
+  (if (empty? tovisit)
+    acc
+    (let [candidate (first tovisit)
+          adjecents (filter (partial unvisited? (:visited candidate)) (neighbors (:vault candidate) (:current candidate)))
+          next-moves (map (fn [pos] {:vault vault :currrent pos :visited {current 0}) adjecents)]
+      (recur (into (rest tovisit) next-moves) acc))))
 
 (defn day18a
   "solution for day18a"
   [vault]
-  (let [[pos _] (first (filter (comp current? second) vault))]
-    (traverse vault pos (neighbors vault pos) {pos 0})))
+  (let [[current _] (first (filter (comp current? second) vault))
+        tovisit (map (fn [pos] {:vault vault :currrent pos :visited {current 0}) (neighbors vault current))]
+    (traverse tovisit [])))
