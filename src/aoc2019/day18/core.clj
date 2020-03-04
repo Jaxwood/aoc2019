@@ -76,7 +76,7 @@
     (= (count remaining) 0)))
 
 (defn moves
-  ""
+  "transform moves into the next state"
   [{:keys [vault from current visited]} move adjecent]
   (map (fn [pos] {:vault vault :from current :current pos :visited (conj visited [current (inc move)])}) adjecent))
 
