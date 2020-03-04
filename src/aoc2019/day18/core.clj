@@ -54,7 +54,7 @@
             (recur (rest lst) acc)
             (recur (rest lst) (conj acc next))))))))
 
-(def visited? (fn [visited pos] (nil? (get visited pos))))
+(def unvisited? (fn [visited pos] (nil? (get visited pos))))
 
 (defn traverse
   "traverse the vault"
@@ -64,7 +64,7 @@
     (let [moves (get visited cur)
           pos (first visit)
           type (get vault pos)
-          adjecent (filter (partial visited? visited) (neighbors vault pos))]
+          adjecent (filter (partial unvisited? visited) (neighbors vault pos))]
       (if (key? type)
         (let [door (first (filter (fn [[_ t]] (= t (unlocks type))) vault))
               open-vault (assoc (assoc vault (first door) :open) pos :open)]
