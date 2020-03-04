@@ -61,19 +61,35 @@
         visited (:visited candidate)]
     (filter #(nil? (get visited %)) adjecent)))
 
+(defn explored?
+  "is the vault fully explored?"
+  [vault]
+  (let [remaining (filter (fn [[_ type]] (key? type)) vault)]
+    (= (count remaining) 0)))
+
 (defn traverse
   "traverse the vault"
   [tovisit acc]
   (if (empty? tovisit)
-    acc
-    (let [candidate (first tovisit)
-          adjecent (unvisited? candidate)
-          next-moves (map (fn [pos] {:vault vault :currrent pos :visited {current 0}) adjecents)]
-      (recur (into (rest tovisit) next-moves) acc)))))
+    (apply min (map second acc))
+    (let [{:keys [vault current from visited], :as candidate} (first tovisit)
+          move (get visited from)
+          tile (get vault current)]
+      (if (key? tile)
+        (let [[door _] (first (filter (fn [[_ type]] (= type (unlocks tile))) vault))
+              updated-vault (assoc (assoc vault current :open) door :open)
+              adjecent (unvisited? (assoc (assoc candidate :visited {current (inc move)}) :vault updated-vault))
+              next-moves (map (fn [pos] {:vault updated-vault :from current :current pos :visited {current (inc move)}}) adjecent)]
+          (if (explored? updated-vault)
+            (recur (into (rest tovisit) next-moves) (conj acc [current (inc move)]))
+            (recur (into (rest tovisit) next-moves) acc)))
+        (let [adjecent (unvisited? candidate)
+              next-moves (map (fn [pos] {:vault (:vault candidate) :from (:current candidate) :current pos :visited {(:current candidate) (inc move)}}) adjecent)]
+          (recur (into (rest tovisit) next-moves) acc))))))
 
 (defn day18a
   "solution for day18a"
   [vault]
   (let [[current _] (first (filter (comp current? second) vault))
-        tovisit (map (fn [pos] {:vault vault :currrent pos :visited {current 0}) (neighbors vault current))]
+        tovisit (map (fn [pos] {:vault vault :current pos :from current :visited {current 0}}) (neighbors vault current))]
     (traverse tovisit [])))
