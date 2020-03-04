@@ -54,7 +54,12 @@
             (recur (rest lst) acc)
             (recur (rest lst) (conj acc next))))))))
 
-(def unvisited? (fn [visited pos] (nil? (get visited pos))))
+(defn unvisited?
+  "filter nodes that has yet to be visited"
+  [candidate]
+  (let [adjecent (neighbors (:vault candidate) (:current candidate))
+        visited (:visited candidate)]
+    (filter #(nil? (get visited %)) adjecent)))
 
 (defn traverse
   "traverse the vault"
@@ -62,9 +67,9 @@
   (if (empty? tovisit)
     acc
     (let [candidate (first tovisit)
-          adjecents (filter (partial unvisited? (:visited candidate)) (neighbors (:vault candidate) (:current candidate)))
+          adjecent (unvisited? candidate)
           next-moves (map (fn [pos] {:vault vault :currrent pos :visited {current 0}) adjecents)]
-      (recur (into (rest tovisit) next-moves) acc))))
+      (recur (into (rest tovisit) next-moves) acc)))))
 
 (defn day18a
   "solution for day18a"
