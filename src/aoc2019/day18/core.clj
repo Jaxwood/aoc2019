@@ -56,10 +56,18 @@
 
 (defn unvisited?
   "filter nodes that has yet to be visited"
-  [candidate]
-  (let [adjecent (neighbors (:vault candidate) (:current candidate))
-        visited (:visited candidate)]
+  [{:keys [vault current from visited]}]
+  (let [adjecent (neighbors vault current)]
     (filter #(nil? (get visited %)) adjecent)))
+
+(defn open
+  "opens a door"
+  [{:keys [vault current from visited]}]
+  (let [obstacle (get vault current)
+        [door _] (first (filter (fn [[_ type]] (= type (unlocks obstacle))) vault))]
+    (if (nil? door)
+      (assoc vault current :open)
+      (assoc vault current :open door :open))))
 
 (defn explored?
   "is the vault fully explored?"
@@ -67,24 +75,28 @@
   (let [remaining (filter (fn [[_ type]] (key? type)) vault)]
     (= (count remaining) 0)))
 
+(defn moves
+  ""
+  [{:keys [vault from current visited]} move adjecent]
+  (map (fn [pos] {:vault vault :from current :current pos :visited (conj visited [current (inc move)])}) adjecent))
+
 (defn traverse
   "traverse the vault"
   [tovisit acc]
   (if (empty? tovisit)
-    (apply min (map second acc))
+    (apply min acc)
     (let [{:keys [vault current from visited], :as candidate} (first tovisit)
           move (get visited from)
-          tile (get vault current)]
-      (if (key? tile)
-        (let [[door _] (first (filter (fn [[_ type]] (= type (unlocks tile))) vault))
-              updated-vault (assoc (assoc vault current :open) door :open)
-              adjecent (unvisited? (assoc (assoc candidate :visited {current (inc move)}) :vault updated-vault))
-              next-moves (map (fn [pos] {:vault updated-vault :from current :current pos :visited {current (inc move)}}) adjecent)]
-          (if (explored? updated-vault)
-            (recur (into (rest tovisit) next-moves) (conj acc [current (inc move)]))
+          obstacle (get vault current)]
+      (if (key? obstacle)
+        (let [updated-candidate (assoc candidate :visited {} :vault (open candidate))
+              adjecent (unvisited? updated-candidate)
+              next-moves (moves updated-candidate move adjecent)]
+          (if (explored? (:vault updated-candidate))
+            (recur (rest tovisit) (conj acc (inc move)))
             (recur (into (rest tovisit) next-moves) acc)))
         (let [adjecent (unvisited? candidate)
-              next-moves (map (fn [pos] {:vault (:vault candidate) :from (:current candidate) :current pos :visited {(:current candidate) (inc move)}}) adjecent)]
+              next-moves (moves candidate move adjecent)]
           (recur (into (rest tovisit) next-moves) acc))))))
 
 (defn day18a
@@ -92,4 +104,4 @@
   [vault]
   (let [[current _] (first (filter (comp current? second) vault))
         tovisit (map (fn [pos] {:vault vault :current pos :from current :visited {current 0}}) (neighbors vault current))]
-    (traverse tovisit [])))
+    (traverse (into #{} tovisit) #{})))
