@@ -104,9 +104,9 @@
   [paths breadcrumbs acc]
   (if (= 1 (count breadcrumbs))
     acc
-    (let [a (first breadcrumbs)
-          b (second breadcrumbs)
-          [_ v _] (first (filter (fn [[k v _]] (= k b)) (a paths)))]
+    (let [fst (first breadcrumbs)
+          snd (second breadcrumbs)
+          [_ v _] (first (filter (fn [[k v _]] (= k snd)) (fst paths)))]
       (recur paths (rest breadcrumbs) (+ acc v)))))
 
 
@@ -116,8 +116,8 @@
   (if (empty? acc)
     (apply min scores)
     (let [breadcrumbs (first acc) ;; [[:current]]
-          next (last breadcrumbs) ;; :current
-          connected (filter (partial access? breadcrumbs) (next paths))
+          candidate (last breadcrumbs) ;; :current
+          connected (filter (partial access? breadcrumbs) (candidate paths))
           sorted (sort-by second connected)
           ways (map (fn [n] (conj breadcrumbs (first n))) sorted)]
       (if (empty? connected)
