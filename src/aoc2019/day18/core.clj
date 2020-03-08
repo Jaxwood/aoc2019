@@ -20,3 +20,8 @@
         (let [line (first lines)
               result (map-indexed (fn [x character] [[x y] (tile (str character))]) line)]
           (recur (rest lines) (dec y) (into acc result)))))))
+  
+(defn left [[x y]] [(dec x) y])
+(defn right [[x y]] [(inc x) y])
+(defn up [[x y]] [x (inc y)])
+(defn down [[x y]] [x (dec y)])
