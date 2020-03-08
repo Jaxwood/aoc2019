@@ -3,27 +3,9 @@
             [aoc2019.day18.core :refer :all]))
 
 (deftest day18
-   (testing "day18a testcase a"
-     (let [expected 8
-           actual (day18a (parse "src/aoc2019/day18/a.txt"))]
-       (is (= expected actual))))
-  (testing "day18a testcase b"
-    (let [expected 86
-          actual (day18a (parse "src/aoc2019/day18/b.txt"))]
-      (is (= expected actual))))
-  (testing "day18a testcase c"
-    (let [expected 132
-          actual (day18a (parse "src/aoc2019/day18/c.txt"))]
-      (is (= expected actual))))
-  ;;(testing "day18a testcase d"
-    ;;(let [expected 136
-          ;;actual (day18a (parse "src/aoc2019/day18/d.txt"))]
-      ;;(is (= expected actual))))
-  (testing "day18a testcase e"
-    (let [expected 81
-          actual (day18a (parse "src/aoc2019/day18/e.txt"))]
-      (is (= expected actual)))))
-  ;;(testing "day18a"
-    ;;(let [expected 81
-          ;;actual (day18a (parse "src/aoc2019/day18/input.txt"))]
-      ;;(is (= expected actual)))))
+   (testing "parse"
+     (let [expected  {[0 0] :wall [1 0] :wall [2 0] :wall [3 0] :wall [4 0] :wall [5 0] :wall [6 0] :wall [7 0] :wall [8 0] :wall
+                      [0 -1] :wall [1 -1] :b [2 -1] :open [3 -1] :A [4 -1] :open [5 -1] :current [6 -1] :open [7 -1] :a [8 -1] :wall
+                      [0 -2] :wall [1 -2] :wall [2 -2] :wall [3 -2] :wall [4 -2] :wall [5 -2] :wall [6 -2] :wall [7 -2] :wall [8 -2] :wall}
+           actual (parse "src/aoc2019/day18/a.txt")]
+       (is (= expected actual)))))
