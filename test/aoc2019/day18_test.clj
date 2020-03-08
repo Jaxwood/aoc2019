@@ -24,4 +24,8 @@
    (testing "down"
      (let [expected [0 -1]
            actual (down [0 0])]
+       (is (= expected actual))))
+   (testing "neighbors"
+     (let [expected [[4 -1] [6 -1]]
+           actual (neighbors (parse "src/aoc2019/day18/a.txt") [5 -1])]
        (is (= expected actual)))))
