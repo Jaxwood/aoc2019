@@ -1,6 +1,6 @@
 (ns aoc2019.day18.core
   (:require [clojure.string :refer [lower-case split-lines]]
-            [clojure.set :refer [difference]]))
+            [clojure.set :refer [subset? difference]]))
 
 (defn tile
   "parse the tile"
@@ -65,3 +65,14 @@
           (if (key? type)
             (recur (into (rest moves) next-moves) (conj visited [x y]) (into acc {type {:cost m :dependsOn doors}}))
             (recur (into (rest moves) next-moves) (conj visited [x y]) acc)))))))
+
+(defn accessible?
+  "find keys that is accessible"
+  [foundkeys [k v]]
+  (let [dependsOn (set (:dependsOn v))]
+    (or (empty? dependsOn) (subset? dependsOn foundkeys))))
+
+(defn get-key
+  "get the key from the vault"
+  [vault k]
+  (first (filter (fn [entry] (= k (val entry))) vault)))
