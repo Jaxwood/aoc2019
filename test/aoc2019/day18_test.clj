@@ -30,6 +30,33 @@
           actual (neighbors (parse "src/aoc2019/day18/a.txt") [5 -1])]
       (is (= expected actual))))
   (testing "explore"
-    (let [expected {:a {:cost 2 :dependsOn []} :b {:cost 4 :dependsOn [:a]}}
+    (let [expected {:a {:cost 2 :doors []} :b {:cost 4 :doors [:a]}}
           actual (explore (parse "src/aoc2019/day18/a.txt") [5 -1])]
+      (is (= expected actual))))
+  (testing "distances"
+    (let [expected {:current {:a {:cost 2 :doors []}
+                              :b {:cost 4 :doors [:a]}}
+                    :a {:b {:cost 6 :doors [:a]}}
+                    :b {:a {:cost 6 :doors [:a]}}}
+          actual (distances (parse "src/aoc2019/day18/a.txt"))]
+      (is (= expected actual))))
+  (testing "testcase a"
+    (let [expected 8
+          actual (day18a (parse "src/aoc2019/day18/a.txt"))]
+      (is (= expected actual))))
+  (testing "testcase b"
+    (let [expected 86
+          actual (day18a (parse "src/aoc2019/day18/b.txt"))]
+      (is (= expected actual))))
+  (testing "testcase c"
+    (let [expected 132
+          actual (day18a (parse "src/aoc2019/day18/c.txt"))]
+      (is (= expected actual))))
+  ;; (testing "testcase d"
+    ;; (let [expected 136
+          ;; actual (day18a (parse "src/aoc2019/day18/d.txt"))]
+      ;; (is (= expected actual))))
+  (testing "testcase e"
+    (let [expected 81
+          actual (day18a (parse "src/aoc2019/day18/e.txt"))]
       (is (= expected actual)))))

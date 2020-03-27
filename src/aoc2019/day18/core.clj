@@ -63,16 +63,55 @@
               next (difference (set (neighbors vault [x y])) visited)
               next-moves (with-moves (inc m) (with-doors type doors) next)]
           (if (key? type)
-            (recur (into (rest moves) next-moves) (conj visited [x y]) (into acc {type {:cost m :dependsOn doors}}))
+            (recur (into (rest moves) next-moves) (conj visited [x y]) (into acc {type {:cost m :doors doors}}))
             (recur (into (rest moves) next-moves) (conj visited [x y]) acc)))))))
 
 (defn accessible?
   "find keys that is accessible"
   [foundkeys [k v]]
-  (let [dependsOn (set (:dependsOn v))]
-    (or (empty? dependsOn) (subset? dependsOn foundkeys))))
+  (if (contains? foundkeys k)
+    false
+    (let [dependsOn (set (:doors v))]
+      (or (empty? dependsOn) (subset? dependsOn foundkeys)))))
 
-(defn get-key
-  "get the key from the vault"
-  [vault k]
-  (first (filter (fn [entry] (= k (val entry))) vault)))
+(comment
+  (defn get-key
+    "get the key from the vault"
+    [vault k]
+    (first (filter (fn [entry] (= k (val entry))) vault))))
+
+(defn distances
+  "find all the distances between the keys"
+  [vault]
+  (let [current (first (first (filter #(= :current (second %)) vault)))
+        kks (filter #(key? (second %)) vault)
+        state {:current (explore vault current)}]
+    (loop [ks kks s state]
+      (if (empty? ks)
+        s
+        (let [[pos k] (first ks)]
+          (recur (rest ks) (into s {k (explore vault pos)})))))))
+
+(defn travel
+  "find the next keys to travel to"
+  [candidates cost sofar]
+  (loop [vs candidates acc []]
+    (if (empty? vs)
+      acc
+    (let [[k v] (first vs)]
+      (recur (rest vs) (conj acc [(+ (:cost v) cost) (conj sofar k)]))))))
+
+(defn shortest-path
+  "find the shortest path"
+  [state queue visited size]
+  (let [[cost head] (first queue)
+        visit (filter (partial accessible? (set head)) ((last head) state))]
+    (if (= size (count head))
+      cost
+      (recur state (sort-by first (into (rest queue) (travel visit cost head))) visited size))))
+
+(defn day18a
+  "find the shortest path while visiting all keys"
+  [vault]
+  (let [state (distances vault)]
+    (shortest-path state [[0 [:current]]] [] (count (keys state)))))
