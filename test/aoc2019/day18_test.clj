@@ -59,8 +59,4 @@
   (testing "testcase e"
     (let [expected 81
           actual (day18a (parse "src/aoc2019/day18/e.txt"))]
-      (is (= expected actual))))
-  (testing "day18a"
-    (let [expected 0
-          actual (day18a (parse "src/aoc2019/day18/input.txt"))]
       (is (= expected actual)))))

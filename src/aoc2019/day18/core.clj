@@ -47,7 +47,7 @@
 (defn with-doors
   "add the doors"
   [type acc]
-  (if (door? type)
+  (if (or (door? type) (key? type))
     (conj acc (keyword (lower-case (name type))))
     acc))
 
@@ -71,13 +71,8 @@
   [foundkeys [k v]]
   (if (contains? foundkeys k)
     false
-    (let [dependsOn (set (:doors v))]
-      (or (empty? dependsOn) (subset? dependsOn foundkeys)))))
-
-(defn get-key
-  "get the key from the vault"
-  [vault k]
-  (first (filter (fn [entry] (= k (val entry))) vault)))
+    (let [doors (set (:doors v))]
+      (or (empty? doors) (subset? doors foundkeys)))))
 
 (defn distances
   "find all the distances between the keys"
@@ -98,24 +93,24 @@
     (if (empty? vs)
       acc
     (let [[k v] (first vs)]
-      (recur (rest vs) (conj acc [(+ (:cost v) cost) (conj sofar k)]))))))
-
+    (recur (rest vs) (conj acc [(+ (:cost v) cost) (conj sofar k)]))))))
+     
 (defn shortest-path
   "find the shortest path"
-  [vault state queue visited size]
+  [state queue visited size]
   (let [[cost head] (first queue)
-        loc (first (get-key vault (last head)))
-        previous (get visited loc)]
+        candidate (last head)
+        previous (get visited candidate)]
     (if (= size (count head))
       cost
       (if (or (some #(= (set head) (set %)) previous) false)
-        (recur vault state (rest queue) visited size)
-        (let [visit (filter (partial accessible? (set head)) ((last head) state))
+        (recur state (rest queue) visited size)
+        (let [visit (filter (partial accessible? (set head)) (candidate state))
               candidates (travel visit cost head)]
-          (recur vault state (sort-by first (into (rest queue) candidates)) (update visited loc #(conj % head)) size))))))
+          (recur state (sort-by first (into (rest queue) candidates)) (update visited candidate #(conj % head)) size))))))
 
 (defn day18a
   "find the shortest path while visiting all keys"
   [vault]
   (let [state (distances vault)]
-    (shortest-path vault state [[0 [:current]]] {} (count (keys state)))))
+    (shortest-path state [[0 [:current]]] {} (count (keys state)))))
