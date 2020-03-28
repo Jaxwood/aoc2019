@@ -74,11 +74,10 @@
     (let [dependsOn (set (:doors v))]
       (or (empty? dependsOn) (subset? dependsOn foundkeys)))))
 
-(comment
-  (defn get-key
-    "get the key from the vault"
-    [vault k]
-    (first (filter (fn [entry] (= k (val entry))) vault))))
+(defn get-key
+  "get the key from the vault"
+  [vault k]
+  (first (filter (fn [entry] (= k (val entry))) vault)))
 
 (defn distances
   "find all the distances between the keys"
@@ -103,15 +102,20 @@
 
 (defn shortest-path
   "find the shortest path"
-  [state queue visited size]
+  [vault state queue visited size]
   (let [[cost head] (first queue)
-        visit (filter (partial accessible? (set head)) ((last head) state))]
+        loc (first (get-key vault (last head)))
+        previous (get visited loc)]
     (if (= size (count head))
       cost
-      (recur state (sort-by first (into (rest queue) (travel visit cost head))) visited size))))
+      (if (or (some #(= (set head) (set %)) previous) false)
+        (recur vault state (rest queue) visited size)
+        (let [visit (filter (partial accessible? (set head)) ((last head) state))
+              candidates (travel visit cost head)]
+          (recur vault state (sort-by first (into (rest queue) candidates)) (update visited loc #(conj % head)) size))))))
 
 (defn day18a
   "find the shortest path while visiting all keys"
   [vault]
   (let [state (distances vault)]
-    (shortest-path state [[0 [:current]]] [] (count (keys state)))))
+    (shortest-path vault state [[0 [:current]]] {} (count (keys state)))))

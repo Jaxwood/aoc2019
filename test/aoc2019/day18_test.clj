@@ -52,11 +52,15 @@
     (let [expected 132
           actual (day18a (parse "src/aoc2019/day18/c.txt"))]
       (is (= expected actual))))
-  ;; (testing "testcase d"
-    ;; (let [expected 136
-          ;; actual (day18a (parse "src/aoc2019/day18/d.txt"))]
-      ;; (is (= expected actual))))
+  (testing "testcase d"
+    (let [expected 136
+          actual (day18a (parse "src/aoc2019/day18/d.txt"))]
+      (is (= expected actual))))
   (testing "testcase e"
     (let [expected 81
           actual (day18a (parse "src/aoc2019/day18/e.txt"))]
+      (is (= expected actual))))
+  (testing "day18a"
+    (let [expected 0
+          actual (day18a (parse "src/aoc2019/day18/input.txt"))]
       (is (= expected actual)))))
