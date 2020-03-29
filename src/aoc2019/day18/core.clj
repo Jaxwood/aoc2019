@@ -1,6 +1,6 @@
 (ns aoc2019.day18.core
   (:require [clojure.string :refer [lower-case split-lines]]
-            [clojure.set :refer [subset? difference]]))
+            [clojure.set :refer [subset?]]))
 
 (defn tile
   "parse the tile"
@@ -24,93 +24,100 @@
 
 (def all-keys (into #{} (map (comp keyword str char) (range 97 123))))
 (def all-doors (into #{} (map (comp keyword str char) (range 65 91))))
-(defn left [[x y]] [(dec x) y])
-(defn right [[x y]] [(inc x) y])
-(defn up [[x y]] [x (inc y)])
-(defn down [[x y]] [x (dec y)])
-(defn key? [candidate] (contains? all-keys candidate))
-(defn door? [candidate] (contains? all-doors candidate))
-(defn wall? [vault pos] (= :wall (get vault pos)))
+(def key? #(contains? all-keys %))
+(def door? #(contains? all-doors %))
+(def current? #(= :current %))
+(def wall? #(= :wall %))
 (def not-wall? (complement wall?))
 
+(defn get-by-type
+  "retrieve the coordinate for a keyword"
+  [vault type]
+  (first (first (filter (fn [[_ t]] (= type t)) vault))))
+
 (defn neighbors
-  "find passable neighbor tiles"
-  [vault pos]
-  (let [movements (juxt left right up down)]
-    (filter (partial not-wall? vault) (movements pos))))
+  "find all passable neighbor coordinates"
+  [vault [x y] visited]
+  (let [candidates (map (fn [[xx yy]] [(+ x xx) (+ y yy)]) [[0 1] [1 0] [-1 0] [0 -1]])]
+    (filter (fn [coord] (and (not (contains? visited coord)) (not-wall? (get vault coord)))) candidates)))
 
-(defn with-moves
-  "add the movement count to the coordiate"
-  [m doors coords]
-  (map (fn [xs] (conj (conj xs m) doors)) coords))
+(def move (fn [coord move-count doors] [coord (inc move-count) doors]))
 
-(defn with-doors
-  "add the doors"
-  [type acc]
-  (if (or (door? type) (key? type))
-    (conj acc (keyword (lower-case (name type))))
-    acc))
+(defn update-doors
+  "update the doors found"
+  [vault doors coord]
+  (let [type (get vault coord)]
+    (if (door? type)
+      (set (conj doors (keyword (lower-case (name type)))))
+      (set doors))))
+
+(defn update-state
+  "update the state of the vault"
+  [vault acc move-count doors coord]
+  (let [type (get vault coord)]
+    (if (key? type)
+      (update acc type (fn [old] [move-count (vec (into doors (or (second old) [])))]))
+      acc)))
 
 (defn explore
-  "find the keys"
-  [vault from]
-  (let [tiles (with-moves 1 [] (neighbors vault from))]
-    (loop [moves tiles visited #{from} acc {}]
-      (if (empty? moves)
+  "explore the vault for a certain key"
+  [vault type]
+  (let [start (get-by-type vault type)
+        state (map #(move % 0 (update-doors vault [] %)) (neighbors vault start #{}))]
+    (loop [queue state acc {} visited #{start}]
+      (if (empty? queue)
         acc
-        (let [[x y m doors] (first moves)
-              type (get vault [x y])
-              next (difference (set (neighbors vault [x y])) visited)
-              next-moves (with-moves (inc m) (with-doors type doors) next)]
-          (if (key? type)
-            (recur (into (rest moves) next-moves) (conj visited [x y]) (into acc {type {:cost m :doors doors}}))
-            (recur (into (rest moves) next-moves) (conj visited [x y]) acc)))))))
+        (let [[coord move-count doors] (first queue)
+              candidates (neighbors vault coord visited)
+              new-state (update-state vault acc move-count doors coord)
+              moves (map #(move % move-count (update-doors vault doors %)) candidates)]
+          (recur (concat (rest queue) moves) new-state (conj visited coord)))))))
 
-(defn accessible?
-  "find keys that is accessible"
-  [foundkeys [k v]]
-  (if (contains? foundkeys k)
-    false
-    (let [doors (set (:doors v))]
-      (or (empty? doors) (subset? doors foundkeys)))))
-
-(defn distances
-  "find all the distances between the keys"
+(defn explore-all
+  "explore the vault for all possible keys"
   [vault]
-  (let [current (first (first (filter #(= :current (second %)) vault)))
-        kks (filter #(key? (second %)) vault)
-        state {:current (explore vault current)}]
-    (loop [ks kks s state]
+  (let [state {:current (explore vault :current)}
+        kks (map second (filter #(key? (second %)) vault))]
+    (loop [ks kks acc state]
       (if (empty? ks)
-        s
-        (let [[pos k] (first ks)]
-          (recur (rest ks) (into s {k (explore vault pos)})))))))
+        acc
+        (recur (rest ks) (update acc (first ks) (fn [old] (explore vault (first ks)))))))))
+
+(defn visited?
+  "has this been visited previously?"
+  [previous candidate]
+  (or (some #(= candidate %) previous) false))
 
 (defn travel
-  "find the next keys to travel to"
-  [candidates cost sofar]
-  (loop [vs candidates acc []]
-    (if (empty? vs)
-      acc
-    (let [[k v] (first vs)]
-    (recur (rest vs) (conj acc [(+ (:cost v) cost) (conj sofar k)]))))))
-     
+  "calculate the next paths to travel"
+  [steps candidates breadcrumbs]
+  (loop [targets candidates result []]
+    (if (empty? targets)
+      result
+      (let [[k [num doors]] (first targets)]
+        (if (contains? breadcrumbs k)
+          (recur (rest targets) result)
+          (if (subset? (set doors) breadcrumbs)
+            (recur (rest targets) (conj result [(+ steps num) k (conj breadcrumbs k)]))
+            (recur (rest targets) result)))))))
+
 (defn shortest-path
-  "find the shortest path"
-  [state queue visited size]
-  (let [[cost head] (first queue)
-        candidate (last head)
-        previous (get visited candidate)]
-    (if (= size (count head))
-      cost
-      (if (or (some #(= (set head) (set %)) previous) false)
-        (recur state (rest queue) visited size)
-        (let [visit (filter (partial accessible? (set head)) (candidate state))
-              candidates (travel visit cost head)]
-          (recur state (sort-by first (into (rest queue) candidates)) (update visited candidate #(conj % head)) size))))))
+  "find shortest path by visiting the lowest distance found so far"
+  [vault]
+  (let [all (explore-all vault)
+        max-keys (count (filter #(key? (second %)) vault))
+        queue [[0, :current, #{}]]]
+    (loop [qs queue seen {}]
+      (let [[steps k breadcrumb] (first qs)]
+        (if (visited? (k seen) breadcrumb)
+          (recur (rest qs) seen)
+          (if (= (count breadcrumb) max-keys)
+            steps
+            (let [next (travel steps (k all) breadcrumb)
+                  new-seen (update seen k (fn [old] (conj (or old []) breadcrumb)))]
+              (recur (sort-by first (concat (rest qs) next)) new-seen))))))))
 
 (defn day18a
   "find the shortest path while visiting all keys"
   [vault]
-  (let [state (distances vault)]
-    (shortest-path state [[0 [:current]]] {} (count (keys state)))))
+  (shortest-path vault))
