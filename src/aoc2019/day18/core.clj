@@ -1,6 +1,6 @@
 (ns aoc2019.day18.core
   (:require [clojure.string :refer [lower-case split-lines]]
-            [clojure.set :refer [subset?]]))
+            [clojure.set :refer [subset? difference]]))
 
 (defn tile
   "parse the tile"
@@ -75,9 +75,8 @@
 
 (defn explore-all
   "explore the vault for all possible keys"
-  [vault]
-  (let [state {:current (explore vault :current)}
-        kks (map second (filter #(key? (second %)) vault))]
+  [vault state]
+  (let [kks (map second (filter #(key? (second %)) vault))]
     (loop [ks kks acc state]
       (if (empty? ks)
         acc
@@ -101,23 +100,44 @@
             (recur (rest targets) (conj result [(+ steps num) k (conj breadcrumbs k)]))
             (recur (rest targets) result)))))))
 
+(defn check-other-quadrants
+  "expand possible moves to other quadrants"
+  [all seen k]
+  (conj (k all) (reduce #(conj %1 (%2 all)) {} (difference #{:q1 :q2 :q3 :q4} seen))))
+
+(defn transform
+  "give unqiue identifier for each start location"
+  [vault name]
+  (update vault (get-by-type vault :current) (constantly name)))
+
 (defn shortest-path
   "find shortest path by visiting the lowest distance found so far"
-  [vault]
-  (let [all (explore-all vault)
-        max-keys (count (filter #(key? (second %)) vault))
-        queue [[0, :current, #{}]]]
-    (loop [qs queue seen {}]
-      (let [[steps k breadcrumb] (first qs)]
-        (if (visited? (k seen) breadcrumb)
-          (recur (rest qs) seen)
-          (if (= (count breadcrumb) max-keys)
-            steps
-            (let [next (travel steps (k all) breadcrumb)
-                  new-seen (update seen k (fn [old] (conj (or old []) breadcrumb)))]
-              (recur (sort-by first (concat (rest qs) next)) new-seen))))))))
+  [all until? queue history]
+  (loop [qs queue seen history]
+    (let [[steps k breadcrumbs] (first qs)]
+      (if (visited? (k seen) breadcrumbs)
+        (recur (rest qs) seen)
+        (if (until? breadcrumbs)
+          steps
+          (let [next (travel steps (check-other-quadrants all breadcrumbs k) breadcrumbs)
+                new-seen (update seen k (fn [old] (conj (or old []) breadcrumbs)))]
+            (recur (sort-by first (concat (rest qs) next)) new-seen)))))))
 
 (defn day18a
   "find the shortest path while visiting all keys"
   [vault]
-  (shortest-path vault))
+  (let [all (explore-all vault {:current (explore vault :current)})
+        until (count (filter #(key? (second %)) vault))
+        queue [[0, :current, #{}]]
+        steps (shortest-path all #(= (count %) until) queue {})]
+    steps))
+
+(defn day18b
+  "find the shortest path"
+  [vault]
+  (let [transformed-vault (reduce #(transform %1 %2) vault [:q1 :q2 :q3 :q4])
+        state (reduce #(conj %1 {%2 (explore transformed-vault %2)}) {} [:q1 :q2 :q3 :q4])
+        all (explore-all transformed-vault state)
+        until (count (filter #(key? (second %)) vault))
+        queue [[0, :q1, #{}] [0, :q2, #{}] [0, :q3, #{}] [0, :q4, #{}]]]
+    (shortest-path all #(= (count %) until) queue {})))
