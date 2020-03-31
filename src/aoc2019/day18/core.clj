@@ -137,9 +137,8 @@
         state (reduce #(conj %1 {%2 (explore transformed-vault %2)}) {} [:q1])
         all (explore-all transformed-vault state)
         until (count (filter #(key? (second %)) vault))
-        queue [[0 [:q1] #{}]]
-        steps (shortest-path all #(= (count %) until) queue {})]
-    steps))
+        queue [[0 [:q1] #{}]]]
+    (shortest-path all #(= (count %) until) queue {})))
 
 (defn day18b
   "find the shortest path"
