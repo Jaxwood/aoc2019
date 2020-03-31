@@ -100,15 +100,15 @@
             (recur (rest targets) (conj result [(+ steps num) k (conj breadcrumbs k)]))
             (recur (rest targets) result)))))))
 
-(defn check-other-quadrants
-  "expand possible moves to other quadrants"
-  [all seen k]
-  (conj (k all) (reduce #(conj %1 (%2 all)) {} (difference #{:q1 :q2 :q3 :q4} seen))))
-
 (defn transform
   "give unqiue identifier for each start location"
   [vault name]
   (update vault (get-by-type vault :current) (constantly name)))
+
+(defn check-other-quadrants
+  "expand possible moves to other quadrants"
+  [all seen ks]
+  (reduce #(conj %1 (%2 all)) {} ks))
 
 (defn shortest-path
   "find shortest path by visiting the lowest distance found so far"
@@ -121,6 +121,37 @@
           steps
           (let [next (travel steps (check-other-quadrants all breadcrumbs k) breadcrumbs)
                 new-seen (update seen k (fn [old] (conj (or old []) breadcrumbs)))]
+            (recur (sort-by first (concat (rest qs) next)) new-seen)))))))
+
+(defn find-previous
+  ""
+  [all k ks]
+  (vec (map-indexed (fn [i c] (if (nil? (k (c all))) (get ks i) k)) [:q1 :q2 :q3 :q4])))
+
+(defn travel-extended
+  "calculate the next paths to travel"
+  [all steps candidates ks breadcrumbs]
+  (loop [targets candidates result []]
+    (if (empty? targets)
+      result
+      (let [[k [num doors]] (first targets)]
+        (if (contains? breadcrumbs k)
+          (recur (rest targets) result)
+          (if (subset? (set doors) breadcrumbs)
+            (recur (rest targets) (conj result [(+ steps num) (find-previous all k ks) (conj breadcrumbs k)]))
+            (recur (rest targets) result)))))))
+
+(defn shortest-path-extended
+  "find shortest path by visiting the lowest distance found so far"
+  [all until? queue history]
+  (loop [qs queue seen history]
+    (let [[steps ks breadcrumbs] (first qs)]
+      (if (visited? (get seen (set ks)) breadcrumbs)
+        (recur (rest qs) seen)
+        (if (until? breadcrumbs)
+          steps
+          (let [next (travel-extended all steps (check-other-quadrants all breadcrumbs ks) ks breadcrumbs)
+                new-seen (update seen (set ks) (fn [old] (conj (or old []) breadcrumbs)))]
             (recur (sort-by first (concat (rest qs) next)) new-seen)))))))
 
 (defn day18a
@@ -139,5 +170,5 @@
         state (reduce #(conj %1 {%2 (explore transformed-vault %2)}) {} [:q1 :q2 :q3 :q4])
         all (explore-all transformed-vault state)
         until (count (filter #(key? (second %)) vault))
-        queue [[0, :q1, #{}] [0, :q2, #{}] [0, :q3, #{}] [0, :q4, #{}]]]
-    (shortest-path all #(= (count %) until) queue {})))
+        queue [[0, [:q1 :q2 :q3 :q4], #{}]]]
+    (shortest-path-extended all #(= (count %) until) queue {})))
