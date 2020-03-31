@@ -46,9 +46,10 @@
 (defn update-doors
   "update the doors found"
   [vault doors coord]
-  (let [type (get vault coord)]
-    (if (door? type)
-      (set (conj doors (keyword (lower-case (name type)))))
+  (let [type (get vault coord)
+        type-to-lower (keyword (lower-case (name type)))]
+    (if (or (door? type) (key? type))
+      (set (conj doors type-to-lower))
       (set doors))))
 
 (defn update-state
@@ -56,7 +57,7 @@
   [vault acc move-count doors coord]
   (let [type (get vault coord)]
     (if (key? type)
-      (update acc type (fn [old] [move-count (vec (into doors (or (second old) [])))]))
+      (update acc type (fn [old] [move-count (vec (difference (set (into doors (or (second old) []))) #{type}))]))
       acc)))
 
 (defn explore
@@ -119,7 +120,7 @@
         (recur (rest qs) seen)
         (if (until? breadcrumbs)
           steps
-          (let [next (travel steps (check-other-quadrants all breadcrumbs k) breadcrumbs)
+          (let [next (travel steps (k all) breadcrumbs)
                 new-seen (update seen k (fn [old] (conj (or old []) breadcrumbs)))]
             (recur (sort-by first (concat (rest qs) next)) new-seen)))))))
 
