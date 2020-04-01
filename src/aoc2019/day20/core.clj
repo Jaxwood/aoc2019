@@ -85,7 +85,7 @@
           next (filter #(not (contains? visited (first %))) (walkthrough-portal maze [coord type] candidates))]
       (if (end? maze candidates)
         move
-        (recur (into (rest queue) (map #(conj % (inc move)) next)) (conj visited coord))))))
+        (recur (concat (rest queue) (map #(conj % (inc move)) next)) (conj visited coord))))))
 
 (defn day20a
   "find the shortest path through the maze"
