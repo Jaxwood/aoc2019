@@ -18,4 +18,8 @@
   (testing "day20b - testcase a"
     (let [expected 396
           actual (day20b (parse "src/aoc2019/day20/c.txt"))]
+      (is (= expected actual))))
+  (testing "day20b - solution"
+    (let [expected 6214
+          actual (day20b (parse "src/aoc2019/day20/input.txt"))]
       (is (= expected actual)))))

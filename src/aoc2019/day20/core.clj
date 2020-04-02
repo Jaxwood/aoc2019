@@ -87,30 +87,53 @@
   (let [result (filter (fn [[port destination]] (contains? (set destination) coord)) teleports)]
     (vec (difference (set ((comp second first) result)) #{coord}))))
 
-(defn neighbors
+(defn open-coords
   "get the neighbor squares that is open or a portal"
   [maze teleports coord]
   (let [ms (moves coord)
-        open (filter #(open? (get maze %)) ms)
+        open (filter #(open? (get maze %)) ms)]
+    (map (fn [c] [c (get maze c)]) open)))
+
+(def outer? (fn [[x y] [[xmin xmax] [ymin ymax]]] (or (= x xmin) (= y ymax) (= x xmax) (= y ymin))))
+
+(defn find-bounds
+  "finds the outer bounds"
+  [teleports]
+  (let [coords (mapcat second teleports)
+        outer [[(apply min (map first coords))
+                (apply max (map first coords))]
+               [(apply min (map second coords))
+                (apply max (map second coords))]]]
+    outer))
+
+(defn portal-coords
+  "get the neighbor squares that is open or a portal"
+  [maze teleports coord level bounds]
+  (let [ms (moves coord)
         portals (destination teleports coord)]
-    (map (fn [c] [c (get maze c)]) (concat open portals))))
+    (if (and (= 0 level) (outer? coord bounds))
+      []
+      (map (fn [c] [c (get maze c)]) portals))))
 
 (defn update-level
   "increment or decrement the level"
-  [teleports current coord]
-  current)
+  [teleports current bounds coord]
+  (if (outer? coord bounds)
+    (dec current)
+    (inc current)))
 
 (defn shortest-path
   "traverse the maze"
-  [maze teleports start end? entrance]
+  [maze teleports start end? bounds entrance]
   (loop [queue [start] visited entrance]
     (let [[coord type move level :as fst] (first queue)
-          available (neighbors maze teleports coord)
-          non-visited (filter #(not (contains? visited (first %))) available)
-          next-moves (map #(conj % (inc move) (update-level teleports level %)) non-visited)]
+          visitor (or (get visited level) #{})
+          available (map #(into % [(inc move) level]) (open-coords maze teleports coord))
+          ports (map #(into % [(inc move) (update-level teleports level bounds coord)]) (portal-coords maze teleports coord level bounds))
+          non-visited (filter #(not (contains? (or (get visited (last %)) #{}) [(first %) (last %)])) (into available ports))]
       (if (end? coord level)
         move
-        (recur (concat (rest queue) next-moves) (conj visited coord))))))
+        (recur (into (vec (rest queue)) (vec non-visited)) (assoc visited level (conj visitor [coord level])))))))
 
 (defn day20a
   "find the shortest path through the maze"
@@ -118,8 +141,9 @@
   (let [teleports (teleport-locations maze)
         start (into (get teleports [:A :A]) [:open 0 0])
         finish (flatten (get teleports [:Z :Z]))
+        bounds (find-bounds teleports)
         end? (fn [coord level] (= coord finish))]
-    (shortest-path maze teleports start end? #{})))
+    (shortest-path maze teleports start end? bounds {})))
 
 (defn day20b
   "find the shortest path through the recursive maze"
@@ -127,5 +151,6 @@
   (let [teleports (teleport-locations maze)
         start (into (get teleports [:A :A]) [:open 0 0])
         finish (flatten (get teleports [:Z :Z]))
+        bounds (find-bounds teleports)
         end? (fn [coord level] (and (= coord finish) (= 0 level)))]
-    0))
+    (shortest-path maze teleports start end? bounds {})))
