@@ -99,17 +99,23 @@
   "traverse the maze"
   [maze teleports start end entrance]
   (loop [queue [start] visited entrance]
-    (let [[coord type move :as fst] (first queue)
-          candidates (neighbors maze teleports coord)
-          next (filter #(not (contains? visited (first %))) candidates)]
+    (let [[coord type move level :as fst] (first queue)
+          available (neighbors maze teleports coord)
+          non-visited (filter #(not (contains? visited (first %))) available)
+          next-moves (map #(conj % (inc move) level) non-visited)]
       (if (= coord end)
         move
-        (recur (concat (rest queue) (map #(conj % (inc move)) next)) (conj visited coord))))))
+        (recur (concat (rest queue) next-moves) (conj visited coord))))))
 
 (defn day20a
   "find the shortest path through the maze"
   [maze]
   (let [teleports (teleport-locations maze)
-        start (conj (conj (get teleports [:A :A]) :open) 0)
-        end (first (get teleports [:Z :Z]))]
+        start (into (get teleports [:A :A]) [:open 0 0])
+        end (flatten (get teleports [:Z :Z]))]
     (shortest-path maze teleports start end #{})))
+
+(defn day20b
+  "find the shortest path through the recursive maze"
+  [maze]
+  0)
