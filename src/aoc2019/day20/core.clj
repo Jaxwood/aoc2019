@@ -1,6 +1,6 @@
 (ns aoc2019.day20.core
   (:require [clojure.string :refer [split-lines]]
-            [clojure.set :refer [intersection]]))
+            [clojure.set :refer [intersection difference]]))
 
 (defn tile
   "parse the tile"
@@ -31,66 +31,85 @@
   [[x y]]
   (map (fn [[xx yy]] [(+ x xx) (+ y yy)]) [[1 0] [0 1] [-1 0] [0 -1]]))
 
+(defn left-right-portal?
+  "check for a left to right portal"
+  [maze x y]
+  (and (portal? (get maze [(+ x 1) y])) (open? (get maze [(+ x 2) y]))))
+
+(defn right-left-portal?
+  "check for a right to left portal"
+  [maze x y]
+  (and (portal? (get maze [(+ x 1) y])) (open? (get maze [(- x 1) y]))))
+
+(defn top-down-portal?
+  "check for a top down portal"
+  [maze x y]
+  (and (portal? (get maze [x (- y 1)])) (open? (get maze [x (- y 2)]))))
+
+(defn down-top-portal?
+  "check for a down top portal"
+  [maze x y]
+  (and (portal? (get maze [x (- y 1)])) (open? (get maze [x (+ y 1)]))))
+
+(defn teleport-locations
+  "create a map of all teleport locations"
+  [maze]
+  (let [x-max (apply max (map (comp first first) maze))
+        y-min (apply min (map (comp second first) maze))
+        inc-x #(if (= % x-max) 0 (inc %))
+        inc-y #(if (= %1 0) (dec %2) %2)]
+    (loop [x 0 y 0 acc {}]
+      (if (< y y-min)
+        acc
+        (let [new-x (inc-x x)
+              new-y (inc-y new-x y)]
+          (if (portal? (get maze [x y]))
+            (cond
+              (left-right-portal? maze x y)
+              (recur new-x new-y
+                     (update acc [(get maze [x y]) (get maze [(+ x 1) y])] (fn [old] (conj (or old []) [(+ x 2) y]))))
+              (right-left-portal? maze x y)
+              (recur new-x new-y
+                     (update acc [(get maze [x y]) (get maze [(+ x 1) y])] (fn [old] (conj (or old []) [(- x 1) y]))))
+              (top-down-portal? maze x y)
+              (recur new-x new-y
+                     (update acc [(get maze [x y]) (get maze [x (- y 1)])] (fn [old] (conj (or old []) [x (- y 2)]))))
+              (down-top-portal? maze x y)
+              (recur new-x new-y
+                     (update acc [(get maze [x y]) (get maze [x (- y 1)])] (fn [old] (conj (or old []) [x (+ y 1)]))))
+              :else
+              (recur new-x new-y acc))
+            (recur new-x new-y acc)))))))
+
+(defn destination
+  "find the destination after using a portal"
+  [teleports coord]
+  (let [result (filter (fn [[port destination]] (contains? (set destination) coord)) teleports)]
+    (vec (difference (set ((comp second first) result)) #{coord}))))
+
 (defn neighbors
   "get the neighbor squares that is open or a portal"
-  [maze coord]
-  (map (fn [c] [c (get maze c)])
-       (filter #(or (portal? (get maze %)) (open? (get maze %)))
-               (moves coord))))
-
-(defn portal
-  "find the full portal"
-  [maze [[x y] _] [[xx yy] _]]
-  (cond
-    (> y yy) [[xx (dec yy)] (get maze [xx (dec yy)])]
-    (< y yy) [[xx (inc yy)] (get maze [xx (inc yy)])]
-    (> x xx) [[(dec xx) yy] (get maze [(dec xx) yy])]
-    (< x xx) [[(inc xx) yy] (get maze [(inc xx) yy])]))
-
-(defn teleport
-  "find the location to teleport to"
-  [maze [coord1 name1] [coord2 name2]]
-  (let [pairs (filter #(or (= (second %) name1) (= (second %) name2)) maze)
-        new-location (map first (filter #(not (or (= (first %) coord1) (= (first %) coord2))) pairs))
-        candidates (intersection (set new-location) (set (mapcat moves new-location)))]
-    (map (fn [coord] [coord (get maze coord)]) candidates)))
-
-(defn end?
-  "is the end reached"
-  [maze candidates]
-  (let [zs (filter #(= :Z (second %)) candidates)]
-    (if (empty? zs)
-      false
-      (or (some #(= :Z (get maze %)) (moves (first (first zs)))) false))))
-
-(defn walkthrough-portal
-  "handle portal fields"
-  [maze previous fields]
-  (loop [fs fields acc []]
-    (if (empty? fs)
-      acc
-      (let [[coord type :as fst] (first fs)]
-        (if (portal? type)
-          (let [port (teleport maze fst (portal maze previous fst))
-                next (filter #(open? (second %)) (mapcat #(neighbors maze (first %)) port))]
-            (recur (rest fs) (into acc next)))
-          (recur (rest fs) (conj acc fst)))))))
+  [maze teleports coord]
+  (let [ms (moves coord)
+        open (filter #(open? (get maze %)) ms)
+        portals (destination teleports coord)]
+    (map (fn [c] [c (get maze c)]) (concat open portals))))
 
 (defn shortest-path
   "traverse the maze"
-  [maze start entrance]
+  [maze teleports start end entrance]
   (loop [queue [start] visited entrance]
     (let [[coord type move :as fst] (first queue)
-          candidates (neighbors maze coord)
-          next (filter #(not (contains? visited (first %))) (walkthrough-portal maze [coord type] candidates))]
-      (if (end? maze candidates)
+          candidates (neighbors maze teleports coord)
+          next (filter #(not (contains? visited (first %))) candidates)]
+      (if (= coord end)
         move
         (recur (concat (rest queue) (map #(conj % (inc move)) next)) (conj visited coord))))))
 
 (defn day20a
   "find the shortest path through the maze"
   [maze]
-  (let [as (map first (filter #(= :A (second %)) maze))
-        pair (intersection (set as) (set (mapcat moves as)))
-        start (filter #(open? (second %)) (mapcat #(neighbors maze %) pair))]
-    (shortest-path maze (conj (first start) 0) pair)))
+  (let [teleports (teleport-locations maze)
+        start (conj (conj (get teleports [:A :A]) :open) 0)
+        end (first (get teleports [:Z :Z]))]
+    (shortest-path maze teleports start end #{})))
