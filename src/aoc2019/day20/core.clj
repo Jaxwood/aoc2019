@@ -95,15 +95,20 @@
         portals (destination teleports coord)]
     (map (fn [c] [c (get maze c)]) (concat open portals))))
 
+(defn update-level
+  "increment or decrement the level"
+  [teleports current coord]
+  current)
+
 (defn shortest-path
   "traverse the maze"
-  [maze teleports start end entrance]
+  [maze teleports start end? entrance]
   (loop [queue [start] visited entrance]
     (let [[coord type move level :as fst] (first queue)
           available (neighbors maze teleports coord)
           non-visited (filter #(not (contains? visited (first %))) available)
-          next-moves (map #(conj % (inc move) level) non-visited)]
-      (if (= coord end)
+          next-moves (map #(conj % (inc move) (update-level teleports level %)) non-visited)]
+      (if (end? coord level)
         move
         (recur (concat (rest queue) next-moves) (conj visited coord))))))
 
@@ -112,10 +117,15 @@
   [maze]
   (let [teleports (teleport-locations maze)
         start (into (get teleports [:A :A]) [:open 0 0])
-        end (flatten (get teleports [:Z :Z]))]
-    (shortest-path maze teleports start end #{})))
+        finish (flatten (get teleports [:Z :Z]))
+        end? (fn [coord level] (= coord finish))]
+    (shortest-path maze teleports start end? #{})))
 
 (defn day20b
   "find the shortest path through the recursive maze"
   [maze]
-  0)
+  (let [teleports (teleport-locations maze)
+        start (into (get teleports [:A :A]) [:open 0 0])
+        finish (flatten (get teleports [:Z :Z]))
+        end? (fn [coord level] (and (= coord finish) (= 0 level)))]
+    0))
