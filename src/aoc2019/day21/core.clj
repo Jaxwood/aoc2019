@@ -26,17 +26,17 @@
         (spit filename (ascii (first line)) :append true)
         (recur (rest line))))))
 
-(def routine [
-  "NOT B J"
-  "AND D J"
-  "NOT A T"
-  "AND D T"
-  "OR T J"
-  "NOT C T"
-  "AND D T"
-  "OR T J"
-  "WALK"
-])
+(def routine
+  "(¬A ^ D) v (¬B ^ D) v (¬C ^ D)"
+  ["NOT A J"
+   "AND D J"
+   "NOT B T"
+   "AND D T"
+   "OR T J"
+   "NOT C T"
+   "AND D T"
+   "OR T J"
+   "WALK"])
 
 (defn jump
   "execute the jumping logic"
