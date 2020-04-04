@@ -26,17 +26,24 @@
         (spit filename (ascii (first line)) :append true)
         (recur (rest line))))))
 
-(def routine
-  "(¬A ^ D) v (¬B ^ D) v (¬C ^ D)"
+(def walk-routine
+  "(¬A v ¬C) ^ D"
   ["NOT A J"
+   "NOT C T"
+   "OR T J"
    "AND D J"
+   "WALK"])
+
+(def run-routine
+  "(¬A v ¬B v (¬C ^ H)) ^ D"
+  ["NOT A J"
    "NOT B T"
-   "AND D T"
    "OR T J"
    "NOT C T"
-   "AND D T"
+   "AND H T"
    "OR T J"
-   "WALK"])
+   "AND D J"
+   "RUN"])
 
 (defn jump
   "execute the jumping logic"
@@ -44,10 +51,16 @@
   (let [state (run program)]
     (if (= (:status state) :stopped)
       acc
-      (recur state (:output state)))))
+      (recur state (conj acc (:output state))))))
 
 (defn day21a
   "find the hull damage"
   [memory]
-  (let [program {:memory memory :address 0 :relative 0 :input (mapcat translate routine)}]
-    (jump program [])))
+  (let [program {:memory memory :address 0 :relative 0 :input (mapcat translate walk-routine)}]
+    (last (jump program []))))
+
+(defn day21b
+  "find the hull damage"
+  [memory]
+  (let [program {:memory memory :address 0 :relative 0 :input (mapcat translate run-routine)}]
+    (last (jump program []))))
