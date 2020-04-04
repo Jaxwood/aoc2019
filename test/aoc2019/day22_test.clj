@@ -53,4 +53,8 @@
                           {:name :increment :n 3}
                           {:name :cut :n -1}]
                          [0 1 2 3 4 5 6 7 8 9])]
+      (is (= expected actual))))
+  (testing "day22a"
+    (let [expected 4775
+          actual (.indexOf (day22a (parse "src/aoc2019/day22/input.txt") (vec (range 10007))) 2019)]
       (is (= expected actual)))))
