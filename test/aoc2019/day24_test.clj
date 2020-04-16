@@ -13,6 +13,6 @@
             [0 2 :space] [1 2 :bug] [2 2 :space] [3 2 :space] [4 2 :space]])]
       (is (= expected actual))))
   (testing "day24a solution"
-    (let [expected 2129920
-          actual (day24a (parse "src/aoc2019/day24/a.txt"))]
+    (let [expected 18400817
+          actual (day24a (parse "src/aoc2019/day24/input.txt"))]
       (is (= expected actual)))))
