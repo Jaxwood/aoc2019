@@ -6,9 +6,13 @@
   (testing "find the diversity rating for a board"
     (let [expected 2129920
           actual (biodiversity-rating [
-            [:space :space :space :space :space]
-            [:space :space :space :space :space]
-            [:space :space :space :space :space]
-            [:bug :space :space :space :space]
-            [:space :bug :space :space :space]])]
+            [0 0 :space] [1 0 :space] [2 0 :space] [3 0 :space] [4 0 :space]
+            [0 1 :space] [1 1 :space] [2 1 :space] [3 1 :space] [4 1 :space]
+            [0 2 :space] [1 2 :space] [2 2 :space] [3 2 :space] [4 2 :space]
+            [0 2 :bug] [1 2 :space] [2 2 :space] [3 2 :space] [4 2 :space]
+            [0 2 :space] [1 2 :bug] [2 2 :space] [3 2 :space] [4 2 :space]])]
+      (is (= expected actual))))
+  (testing "day24a solution"
+    (let [expected 2129920
+          actual (day24a (parse "src/aoc2019/day24/a.txt"))]
       (is (= expected actual)))))
