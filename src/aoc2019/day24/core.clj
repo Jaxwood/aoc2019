@@ -63,3 +63,8 @@
         rating
         (let [next (map (partial tick b) b)]
           (recur next (conj acc rating)))))))
+
+(defn day24b
+  "find the number of bugs after x minutes"
+  [board minutes]
+  0)
