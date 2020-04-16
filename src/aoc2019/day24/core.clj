@@ -54,6 +54,61 @@
         [x y s]
         [x y :space]))))
 
+(defn recursive
+  "generator a board using a strategy for naming"
+  [num strategy]
+  (loop [x 0 y 0 c num acc []]
+    (if (= y 5)
+      (into {} acc)
+      (if (= x 5)
+        (recur 0 (inc y) c acc)
+        (recur (inc x) y (inc c) (conj acc [(strategy c) [x y]]))))))
+
+(def outer (into #{} (mapcat (fn [x] [[x 0] [x 4] [0 x] [4 x]]) (range 5))))
+(def center (into #{} [2 2]))
+(def inner (into #{} [[1 2] [2 3] [2 1] [3 2]]))
+
+(def innermaze (recursive 65 #(keyword (str (char %)))))
+(def outermaze (recursive 1 #(keyword (str %))))
+(def lookup
+  {(:A innermaze) [(:8 outermaze) (:12 outermaze)]
+   (:B innermaze) [(:8 outermaze)]
+   (:C innermaze) [(:8 outermaze)]
+   (:D innermaze) [(:8 outermaze)]
+   (:E innermaze) [(:8 outermaze) (:14 outermaze)]
+   (:F innermaze) [(:12 outermaze)]
+   (:H innermaze) [(:1 outermaze) (:2 outermaze) (:3 outermaze) (:4 outermaze) (:5 outermaze)]
+   (:J innermaze) [(:14 outermaze)]
+   (:K innermaze) [(:12 outermaze)]
+   (:L innermaze) [(:1 outermaze) (:6 outermaze) (:11 outermaze) (:16 outermaze) (:21 outermaze)]
+   (:N innermaze) [(:5 outermaze) (:10 outermaze) (:15 outermaze) (:20 outermaze) (:25 outermaze)]
+   (:O innermaze) [(:14 outermaze)]
+   (:P innermaze) [(:12 outermaze)]
+   (:R innermaze) [(:21 outermaze) (:22 outermaze) (:23 outermaze) (:24 outermaze) (:25 outermaze)]
+   (:T innermaze) [(:14 outermaze)]
+   (:U innermaze) [(:12 outermaze) (:18 outermaze)]
+   (:V innermaze) [(:18 outermaze)]
+   (:W innermaze) [(:18 outermaze)]
+   (:X innermaze) [(:18 outermaze)]
+   (:Y innermaze) [(:14 outermaze) (:18 outermaze)]})
+
+(defn recursive-neighbors
+  "find the neighbors taking into account the recursiveness"
+  [boards level [x y]]
+  (let [board (get boards level)
+        up (or (get boards (inc level)) [])
+        down (or (get boards (dec level)) [])
+        bugs (neighbors board [x y])]
+    (cond
+      (contains? center [x y]) 0
+      (contains? outer [x y])
+        (let [below (lookup [x y])]
+          (+ bugs (count (filter (fn [[x y s]] (and (= s :bug) (contains? below [x y]))) below))))
+      (contains? inner [x y])
+        (let [upper (lookup [x y])]
+          (+ bugs (count (filter (fn [[x y s]] (and (= s :bug) (contains? upper [x y]))) up))))
+      :else bugs)))
+
 (defn day24a
   "find the biodiversity rating for the first duplicate board"
   [board]
@@ -67,4 +122,5 @@
 (defn day24b
   "find the number of bugs after x minutes"
   [board minutes]
-  0)
+  (let [boards {0 board}]
+    0))
