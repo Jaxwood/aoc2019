@@ -64,12 +64,23 @@
         (recur 0 (inc y) c acc)
         (recur (inc x) y (inc c) (conj acc [(strategy c) [x y]]))))))
 
-(def outer (into #{} (mapcat (fn [x] [[x 0] [x 4] [0 x] [4 x]]) (range 5))))
-(def center (into #{} [2 2]))
-(def inner (into #{} [[1 2] [2 3] [2 1] [3 2]]))
+(defn empty-board
+  "create a new empty board"
+  []
+  (loop [x 0 y 0 acc []]
+    (if (= y 5)
+      acc
+      (if (= x 5)
+        (recur 0 (inc y) acc)
+        (recur (inc x) y (conj acc [x y :space]))))))
 
 (def innermaze (recursive 65 #(keyword (str (char %)))))
 (def outermaze (recursive 1 #(keyword (str %))))
+
+(def outer (into #{} (map (fn [k] (get innermaze k)) [:A :B :C :D :E :F :J :K :O :P :T :U :V :W :X :Y])))
+(def center (into #{} [(:M innermaze)]))
+(def inner (into #{} [(:L innermaze) (:H innermaze) (:N innermaze) (:R innermaze)]))
+
 (def lookup
   {(:A innermaze) [(:8 outermaze) (:12 outermaze)]
    (:B innermaze) [(:8 outermaze)]
@@ -81,6 +92,7 @@
    (:J innermaze) [(:14 outermaze)]
    (:K innermaze) [(:12 outermaze)]
    (:L innermaze) [(:1 outermaze) (:6 outermaze) (:11 outermaze) (:16 outermaze) (:21 outermaze)]
+   (:M innermaze) [(:M innermaze)]
    (:N innermaze) [(:5 outermaze) (:10 outermaze) (:15 outermaze) (:20 outermaze) (:25 outermaze)]
    (:O innermaze) [(:14 outermaze)]
    (:P innermaze) [(:12 outermaze)]
@@ -95,18 +107,17 @@
 (defn recursive-neighbors
   "find the neighbors taking into account the recursiveness"
   [boards level [x y]]
-  (let [board (get boards level)
-        up (or (get boards (inc level)) [])
+  (let [up (or (get boards (inc level)) [])
         down (or (get boards (dec level)) [])
-        bugs (neighbors board [x y])]
+        bugs (neighbors boards level [x y])]
     (cond
       (contains? center [x y]) 0
       (contains? outer [x y])
-        (let [below (lookup [x y])]
-          (+ bugs (count (filter (fn [[x y s]] (and (= s :bug) (contains? below [x y]))) below))))
+      (let [below (into #{} (lookup [x y]))]
+        (+ bugs (count (filter (fn [[x y s]] (and (= s :bug) (contains? below [x y]))) down))))
       (contains? inner [x y])
-        (let [upper (lookup [x y])]
-          (+ bugs (count (filter (fn [[x y s]] (and (= s :bug) (contains? upper [x y]))) up))))
+      (let [above (into #{} (lookup [x y]))]
+        (+ bugs (count (filter (fn [[x y s]] (and (= s :bug) (contains? above [x y]))) up))))
       :else bugs)))
 
 (defn day24a
@@ -121,8 +132,43 @@
           (let [next (map (partial tick bs level neighbors) (get bs level))]
             (recur (assoc bs level next) (conj acc rating))))))))
 
+(defn evole
+  "generate the next generation of the board"
+  [boards]
+  (loop [levels (keys boards) acc {}]
+    (if (empty? levels)
+      acc
+      (let [level (first levels)
+            next (map (partial tick boards level recursive-neighbors) (get boards level))]
+        (recur (rest levels) (assoc acc level next))))))
+
+(defn pixel
+  "draw the pixel"
+  [[_ _ s]]
+  (cond
+    (= s :bug) "#"
+    (= s :space) "."))
+
+(defn draw
+  "draw the board"
+  [filename level board]
+  (let [sorted (sort-by (juxt first second) board)
+        grouped (group-by second sorted)]
+    (spit filename (str "level " level "\r\n") :append true)
+    (loop [g grouped]
+      (if (empty? g)
+        0
+        (do 
+          (spit filename (str (apply str (map pixel (second (first g)))) "\r\n") :append true)
+          (recur (rest g)))))))
+
 (defn day24b
   "find the number of bugs after x minutes"
   [board minutes]
-  (let [boards {0 board}]
-    0))
+  (loop [boards {0 board} minute minutes]
+    (if (= 0 minute)
+      (count (filter (fn [[x y s]] (= s :bug)) (apply concat (vals boards))))
+      (let [base (dec (apply min (keys boards)))
+            super (inc (apply max (keys boards)))
+            bs (assoc (assoc boards base (empty-board)) super (empty-board))]
+        (recur (evole bs) (dec minute))))))

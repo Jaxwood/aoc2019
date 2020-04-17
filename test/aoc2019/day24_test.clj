@@ -18,5 +18,5 @@
       (is (= expected actual))))
   (testing "day24b solution"
     (let [expected 99
-          actual (day24b (parse "src/aoc2019/day24/a.txt") 1)]
+          actual (day24b (parse "src/aoc2019/day24/a.txt") 10)]
       (is (= expected actual)))))
