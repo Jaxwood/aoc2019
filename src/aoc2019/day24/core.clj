@@ -76,33 +76,32 @@
 
 (def innermaze (recursive 65 #(keyword (str (char %)))))
 (def outermaze (recursive 1 #(keyword (str %))))
-
 (def outer  (into #{} (map innermaze [:A :B :C :D :E :F :J :K :O :P :T :U :V :W :X :Y])))
 (def center (into #{} (map innermaze [:M])))
 (def inner  (into #{} (map innermaze [:L :H :N :R])))
 
 (def lookup
-  {(:A innermaze) [(:8 outermaze) (:12 outermaze)]
-   (:B innermaze) [(:8 outermaze)]
-   (:C innermaze) [(:8 outermaze)]
-   (:D innermaze) [(:8 outermaze)]
-   (:E innermaze) [(:8 outermaze) (:14 outermaze)]
-   (:F innermaze) [(:12 outermaze)]
-   (:H innermaze) [(:1 outermaze) (:2 outermaze) (:3 outermaze) (:4 outermaze) (:5 outermaze)]
-   (:J innermaze) [(:14 outermaze)]
-   (:K innermaze) [(:12 outermaze)]
-   (:L innermaze) [(:1 outermaze) (:6 outermaze) (:11 outermaze) (:16 outermaze) (:21 outermaze)]
-   (:M innermaze) [(:M innermaze)]
-   (:N innermaze) [(:5 outermaze) (:10 outermaze) (:15 outermaze) (:20 outermaze) (:25 outermaze)]
-   (:O innermaze) [(:14 outermaze)]
-   (:P innermaze) [(:12 outermaze)]
-   (:R innermaze) [(:21 outermaze) (:22 outermaze) (:23 outermaze) (:24 outermaze) (:25 outermaze)]
-   (:T innermaze) [(:14 outermaze)]
-   (:U innermaze) [(:12 outermaze) (:18 outermaze)]
-   (:V innermaze) [(:18 outermaze)]
-   (:W innermaze) [(:18 outermaze)]
-   (:X innermaze) [(:18 outermaze)]
-   (:Y innermaze) [(:14 outermaze) (:18 outermaze)]})
+  {(:A innermaze) (map outermaze [:8 :12])
+   (:B innermaze) (map outermaze [:8])
+   (:C innermaze) (map outermaze [:8])
+   (:D innermaze) (map outermaze [:8])
+   (:E innermaze) (map outermaze [:8 :14])
+   (:F innermaze) (map outermaze [:12])
+   (:H innermaze) (map outermaze [:1 :2 :3 :4 :5])
+   (:J innermaze) (map outermaze [:14])
+   (:K innermaze) (map outermaze [:12])
+   (:L innermaze) (map outermaze [:1 :6 :11 :16 :21])
+   (:M innermaze) (map innermaze [:M])
+   (:N innermaze) (map outermaze [:5 :10 :15 :20 :25])
+   (:O innermaze) (map outermaze [:14])
+   (:P innermaze) (map outermaze [:12])
+   (:R innermaze) (map outermaze [:21 :22 :23 :24 :25])
+   (:T innermaze) (map outermaze [:14])
+   (:U innermaze) (map outermaze [:12 :18])
+   (:V innermaze) (map outermaze [:18])
+   (:W innermaze) (map outermaze [:18])
+   (:X innermaze) (map outermaze [:18])
+   (:Y innermaze) (map outermaze [:14 :18])})
 
 (defn recursive-neighbors
   "find the neighbors taking into account the recursiveness"
@@ -129,26 +128,6 @@
       (let [level (first levels)
             next (map (partial tick boards level recursive-neighbors) (get boards level))]
         (recur (rest levels) (assoc acc level next))))))
-
-(defn pixel
-  "draw the pixel"
-  [[_ _ s]]
-  (cond
-    (= s :bug) "#"
-    (= s :space) "."))
-
-(defn draw
-  "draw the board"
-  [filename level board]
-  (let [sorted (sort-by (juxt first second) board)
-        grouped (group-by second sorted)]
-    (spit filename (str "level " level "\r\n") :append true)
-    (loop [g grouped]
-      (if (empty? g)
-        0
-        (do
-          (spit filename (str (apply str (map pixel (second (first g)))) "\r\n") :append true)
-          (recur (rest g)))))))
 
 (defn day24a
   "find the biodiversity rating for the first duplicate board"
