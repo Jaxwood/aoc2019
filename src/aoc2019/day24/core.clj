@@ -77,9 +77,9 @@
 (def innermaze (recursive 65 #(keyword (str (char %)))))
 (def outermaze (recursive 1 #(keyword (str %))))
 
-(def outer (into #{} (map (fn [k] (get innermaze k)) [:A :B :C :D :E :F :J :K :O :P :T :U :V :W :X :Y])))
-(def center (into #{} [(:M innermaze)]))
-(def inner (into #{} [(:L innermaze) (:H innermaze) (:N innermaze) (:R innermaze)]))
+(def outer  (into #{} (map innermaze [:A :B :C :D :E :F :J :K :O :P :T :U :V :W :X :Y])))
+(def center (into #{} (map innermaze [:M])))
+(def inner  (into #{} (map innermaze [:L :H :N :R])))
 
 (def lookup
   {(:A innermaze) [(:8 outermaze) (:12 outermaze)]
@@ -146,7 +146,7 @@
     (loop [g grouped]
       (if (empty? g)
         0
-        (do 
+        (do
           (spit filename (str (apply str (map pixel (second (first g)))) "\r\n") :append true)
           (recur (rest g)))))))
 
