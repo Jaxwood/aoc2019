@@ -120,18 +120,6 @@
         (+ bugs (count (filter (fn [[x y s]] (and (= s :bug) (contains? above [x y]))) up))))
       :else bugs)))
 
-(defn day24a
-  "find the biodiversity rating for the first duplicate board"
-  [board]
-  (let [level 0
-        boards {level board}]
-    (loop [bs boards acc #{}]
-      (let [rating (biodiversity-rating (get bs level))]
-        (if (contains? acc rating)
-          rating
-          (let [next (map (partial tick bs level neighbors) (get bs level))]
-            (recur (assoc bs level next) (conj acc rating))))))))
-
 (defn evole
   "generate the next generation of the board"
   [boards]
@@ -161,6 +149,18 @@
         (do 
           (spit filename (str (apply str (map pixel (second (first g)))) "\r\n") :append true)
           (recur (rest g)))))))
+
+(defn day24a
+  "find the biodiversity rating for the first duplicate board"
+  [board]
+  (let [level 0
+        boards {level board}]
+    (loop [bs boards acc #{}]
+      (let [rating (biodiversity-rating (get bs level))]
+        (if (contains? acc rating)
+          rating
+          (let [next (map (partial tick bs level neighbors) (get bs level))]
+            (recur (assoc bs level next) (conj acc rating))))))))
 
 (defn day24b
   "find the number of bugs after x minutes"
