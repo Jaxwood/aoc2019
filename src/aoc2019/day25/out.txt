@@ -1,0 +1,54 @@
+north
+west
+take planetoid
+west
+take spool of cat6
+east
+east
+south
+west
+south
+east
+west
+north
+north
+take dark matter
+south
+east
+east
+north
+take sand
+west
+take coin
+west
+south
+take wreath
+west
+take fuel cell
+east
+north
+north
+west
+east
+south
+north
+west
+south
+east
+south
+east
+north
+take jam
+south
+west
+north
+west
+drop coin
+drop dark matter
+drop planetoid
+drop wreath
+south
+
+
+
+
