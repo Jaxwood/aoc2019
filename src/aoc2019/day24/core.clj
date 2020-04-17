@@ -36,14 +36,14 @@
 
 (defn neighbors
   "find the squares with bugs"
-  [board [x y]]
+  [boards level [x y]]
   (let [candidates (into #{} (map (fn [[xx yy]] [(+ x xx) (+ y yy)]) [[-1 0] [0 -1] [1 0] [0 1]]))]
-    (count (filter (fn [[xx yy s]] (and (= s :bug) (contains? candidates [xx yy]))) board))))
+    (count (filter (fn [[xx yy s]] (and (= s :bug) (contains? candidates [xx yy]))) (get boards level)))))
 
 (defn tick
   "update the state of a square"
-  [board [x y s]]
-  (let [bugs (neighbors board [x y])]
+  [boards level strategy [x y s]]
+  (let [bugs (strategy boards level [x y])]
     (cond
       (= s :space)
       (if (or (= bugs 1) (= bugs 2))
@@ -112,12 +112,14 @@
 (defn day24a
   "find the biodiversity rating for the first duplicate board"
   [board]
-  (loop [b board acc #{}]
-    (let [rating (biodiversity-rating b)]
-      (if (contains? acc rating)
-        rating
-        (let [next (map (partial tick b) b)]
-          (recur next (conj acc rating)))))))
+  (let [level 0
+        boards {level board}]
+    (loop [bs boards acc #{}]
+      (let [rating (biodiversity-rating (get bs level))]
+        (if (contains? acc rating)
+          rating
+          (let [next (map (partial tick bs level neighbors) (get bs level))]
+            (recur (assoc bs level next) (conj acc rating))))))))
 
 (defn day24b
   "find the number of bugs after x minutes"
