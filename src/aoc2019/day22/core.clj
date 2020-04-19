@@ -1,25 +1,30 @@
 (ns aoc2019.day22.core
   (:require [clojure.string :refer [starts-with? split-lines]]))
 
-(defn deal
-  "deal new stack"
-  [cards]
-  (vec (reverse cards)))
+(defn xgcd
+  "Extended Euclidean Algorithm"
+  [a b]
+  (if (= a 0)
+    [b 0 1]
+    (let [[g x y] (xgcd (mod b a) a)]
+      [g (- y (* (Math/floorDiv b a) x)) x])))
 
-(defn deal-indexed
+(defn mod_inv
+  "Get inverse using extended gcd"
+  [a b]
+  (let [b (if (neg? b) (- b) b)
+        a (if (neg? a) (- b (mod (- a) b)) a)
+        egcd (xgcd a b)]
+    (if (= (first egcd) 1)
+      (mod (second egcd) b)
+      (throw (str "No inverse since gcd is: " (first egcd))))))
+
+(defn deal
   "deal new stack"
   [size n idx]
   (- size idx 1))
 
 (defn cut
-  "cut the stack"
-  [cards n]
-  (if (pos? n)
-    (into (subvec cards n) (subvec cards 0 n))
-    (let [idx (+ (count cards) n)]
-      (into (subvec cards idx) (subvec cards 0 idx)))))
-
-(defn cut-indexed
   "cut the stack"
   [size n idx]
   (if (pos? n)
@@ -32,25 +37,13 @@
 
 (defn increment
   "increment the stack"
-  [cards n]
-  (let [size (count cards)]
-    (loop [idx 1 acc []]
-      (if (= idx size)
-        (vec (cons (first cards) (mapv second (sort-by first acc))))
-        (let [new-idx (* idx n)
-              shifted (mod new-idx size)]
-          (if (> new-idx size)
-            (recur (inc idx) (conj acc [shifted (nth cards idx)]))
-            (recur (inc idx) (conj acc [new-idx (nth cards idx)]))))))))
-
-(defn increment-indexed
-  "increment the stack"
   [size n idx]
-  (let [new-idx (* idx n)
-        shifted (mod new-idx size)]
-    (if (> new-idx size)
-      shifted
-      new-idx)))
+  (mod (* n idx) size))
+
+(defn increment-reversed
+  "reverse the increment"
+  [size n idx]
+  (mod (* idx (mod_inv n size)) size))
 
 (defn parseCount
   "find the n-amount"
@@ -69,7 +62,6 @@
             (starts-with? line "deal into") (recur (rest lines) (conj acc {:name :deal :n 0 :runner (first fns)}))
             (starts-with? line "cut") (recur (rest lines) (conj acc {:name :cut :n (parseCount line) :runner (second fns)}))
             (starts-with? line "deal with") (recur (rest lines) (conj acc {:name :increment :n (parseCount line) :runner (last fns)}))))))))
-
 
 (defn day22a
   "shuffle the cards according to the different techniques"
