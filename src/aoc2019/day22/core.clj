@@ -1,49 +1,21 @@
 (ns aoc2019.day22.core
   (:require [clojure.string :refer [starts-with? split-lines]]))
 
-(defn xgcd
-  "Extended Euclidean Algorithm"
-  [a b]
-  (if (= a 0)
-    [b 0 1]
-    (let [[g x y] (xgcd (mod b a) a)]
-      [g (- y (* (Math/floorDiv b a) x)) x])))
-
-(defn mod_inv
-  "Get inverse using extended gcd"
-  [a b]
-  (let [b (if (neg? b) (- b) b)
-        a (if (neg? a) (- b (mod (- a) b)) a)
-        egcd (xgcd a b)]
-    (if (= (first egcd) 1)
-      (mod (second egcd) b)
-      (throw (str "No inverse since gcd is: " (first egcd))))))
-
 (defn deal
   "deal new stack"
-  [size n idx]
-  (- size idx 1))
+  [size n [idx a b]]
+  [(- size idx 1) (mod (* -1 a) size) (mod (- size 1 b) size)])
 
 (defn cut
   "cut the stack"
-  [size n idx]
-  (if (pos? n)
-    (if (< idx n)
-      (- size (- n idx))
-      (- idx n))
-    (if (> idx (+ size n))
-      (- (- idx n) size)
-      (- idx n))))
+  [size n [idx a b]]
+  [(mod (- idx n) size) a (mod (- b n) size)])
 
 (defn increment
   "increment the stack"
-  [size n idx]
-  (mod (* n idx) size))
-
-(defn increment-reversed
-  "reverse the increment"
-  [size n idx]
-  (mod (* idx (mod_inv n size)) size))
+  [size n [idx a b]]
+  (if (pos? n)
+    [(mod (* n idx) size) (mod (* a n) size) (mod (* b n) size)]))
 
 (defn parseCount
   "find the n-amount"
@@ -65,11 +37,29 @@
 
 (defn day22a
   "shuffle the cards according to the different techniques"
-  [instructions cards idx]
+  [instructions size idx]
   (if (empty? instructions)
     idx
     (let [instruction (first instructions)
           name (:name instruction)
           runner (:runner instruction)
           n (or (:n instruction) 0)]
-      (recur (rest instructions) cards (runner cards n idx)))))
+      (recur (rest instructions) size (runner size n idx)))))
+
+(defn modpow
+  "wrap modpow from Math/BigInteger"
+  [b e m]
+  (.modPow (biginteger b) (biginteger e) (biginteger m)))
+
+(defn day22b
+  "shuffle the cards according to the different techniques"
+  [instructions size idx times]
+  (if (empty? instructions)
+    (let [[i a b] idx
+          r (mod (* b (modpow (- 1 a) (- size 2) size)) size)]
+      (mod (+ (* (- 2020 r) (modpow a  (* times (- size 2))  size)) r) size))
+    (let [instruction (first instructions)
+          name (:name instruction)
+          runner (:runner instruction)
+          n (or (:n instruction) 0)]
+      (recur (rest instructions) size (runner size n idx) times))))
